@@ -420,12 +420,13 @@ void SixdofControl()
 			double deltapitch = 0;
 #if IS_USE_NAVIGATION
 			navigation.PidOut(&deltaroll, &deltayaw, &deltapitch);
-			auto x = RANGE(lastData.X + deltax, -MAX_XYZ, MAX_XYZ);
-			auto y = RANGE(lastData.Y + deltay, -MAX_XYZ, MAX_XYZ);
-			auto z = RANGE(lastData.Z + deltaz, -MAX_XYZ, MAX_XYZ);
-			auto roll = RANGE(lastData.Roll + deltaroll, -MAX_DEG, MAX_DEG);
-			auto pitch = RANGE(lastData.Pitch + deltapitch, -MAX_DEG, MAX_DEG);
-			auto yaw = RANGE(lastData.Yaw + deltayaw, -MAX_DEG, MAX_DEG);
+			auto posenow = delta.GetNowPoseFromLength();
+			auto x = RANGE(lastData.X + deltax + posenow[0], -MAX_XYZ, MAX_XYZ);
+			auto y = RANGE(lastData.Y + deltay + posenow[1], -MAX_XYZ, MAX_XYZ);
+			auto z = RANGE(lastData.Z + deltaz + posenow[2], -MAX_XYZ, MAX_XYZ);
+			auto roll = RANGE(lastData.Roll + deltaroll + posenow[3], -MAX_DEG, MAX_DEG);
+			auto pitch = RANGE(lastData.Pitch + deltapitch + posenow[4], -MAX_DEG, MAX_DEG);
+			auto yaw = RANGE(lastData.Yaw + deltayaw + posenow[5], -MAX_DEG, MAX_DEG);
 			double* pulse_dugu = Control(x, y, z, roll + info.Roll, yaw, pitch + info.Pitch);
 #else
 			auto x = RANGE(0, -MAX_XYZ, MAX_XYZ);

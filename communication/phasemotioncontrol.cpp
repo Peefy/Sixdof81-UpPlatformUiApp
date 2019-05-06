@@ -332,6 +332,37 @@ double* PhaseMotionControl::GetMotionNowEncoderVelocity()
 	return NowPluse;
 }
 
+// x y z roll pitch yaw
+double* PhaseMotionControl::GetNowPoseFromLength()
+{
+	if (lockobj.try_lock())
+	{
+		memcpy(polelenthmm, NowPluse, sizeof(double) * AXES_COUNT);
+		lockobj.unlock();
+	}
+	for (int i = 0;i < AXES_COUNT;++i)
+	{
+		polelenthmm[i] = (polelenthmm[i] - MIDDLE_POS) * PULSE_COUNT_TO_MM_SCALE; 
+	}
+	auto pose = FromLengthToPose(polelenthmm);
+	memcpy(posefromlength, pose, sizeof(double) * AXES_COUNT);
+	return posefromlength;
+}
+
+double* PhaseMotionControl::GetNowPoleLength()
+{
+	if (lockobj.try_lock())
+	{
+		memcpy(polelenthmm, NowPluse, sizeof(double) * AXES_COUNT);
+		lockobj.unlock();
+	}
+	for (int i = 0;i < AXES_COUNT;++i)
+	{
+		polelenthmm[i] = (polelenthmm[i] - MIDDLE_POS) * PULSE_COUNT_TO_MM_SCALE; 
+	}
+	return polelenthmm;
+}
+
 double PhaseMotionControl::GetMotionAveragePulse()
 {
 	double pulse_num = 0;

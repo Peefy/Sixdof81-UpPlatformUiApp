@@ -110,6 +110,7 @@ using namespace std;
 #define MAX_POLE_LENGTH (MAX_MM / 2.0)
 
 #define MM_TO_PULSE_COUNT_SCALE (PULSE_COUNT_RPM / MM_RPM)
+#define PULSE_COUNT_TO_MM_SCALE (MM_RPM / PULSE_COUNT_RPM)
 
 #define MOTION_LOCK_LEVEL   false
 #define SWITCH_BOTTOM_LEVEL true
@@ -152,6 +153,8 @@ public:
 	void SlowPidCsp(double * pulse);
 	double GetMotionAveragePulse();
 	double* GetMotionNowEncoderVelocity();
+	double* GetNowPoseFromLength();
+	double* GetNowPoleLength();
 	void RenewNowPulse();
 	void SetDDAPositions(double* positions);
 	int GetDDAPositionsCount();
@@ -174,6 +177,8 @@ private:
 	bool enableMove;
 	bool disposed;
 	double pos[AXES_COUNT];
+	double polelenthmm[AXES_COUNT];
+	double posefromlength[AXES_COUNT];
 	SixdofDioAndCount sixdofDioAndCount;
 	deque<double*> pulses;
 protected:
