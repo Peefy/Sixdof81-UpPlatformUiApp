@@ -260,6 +260,7 @@ void VisionOrSensorDataDeal()
 #if IS_USE_NAVIGATION
 	navigation.RenewData();
 	info = sensor.ProvideSensorInfo();
+	/*
 	if (csdata.try_lock())
 	{
 #if	IS_USE_KALMAN_FILTER
@@ -275,6 +276,7 @@ void VisionOrSensorDataDeal()
 		visionData.Yaw = navigation.Yaw;
 		csdata.unlock();
 	}
+	*/
 #else
 	water.RenewData();
 	if (water.IsRecievedData == true)
@@ -409,7 +411,7 @@ void SixdofControl()
 			t += deltat;
 			delta.PidCsp(dis);
 		}
-		// 模拟船视景
+		// 惯导稳定控制
 		else
 		{
 			double deltax = 0;
@@ -453,9 +455,9 @@ void SixdofControl()
 			data.X = (int16_t)(x * 10);
 			data.Y = (int16_t)(y * 10);
 			data.Z = (int16_t)(z * 10);
-			data.Roll = (int16_t)(roll * 100);
+			data.Roll = (int16_t)((roll + info.Roll) * 100);
 			data.Yaw = (int16_t)(yaw * 100);
-			data.Pitch = (int16_t)(pitch * 100);
+			data.Pitch = (int16_t)((pitch + info.Pitch) * 100);
 			t += deltat;
 			delta.PidCsp(dis);
 		}
