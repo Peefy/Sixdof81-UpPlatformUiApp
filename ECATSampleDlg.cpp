@@ -260,7 +260,6 @@ void VisionOrSensorDataDeal()
 #if IS_USE_NAVIGATION
 	navigation.RenewData();
 	info = sensor.ProvideSensorInfo();
-	/*
 	if (csdata.try_lock())
 	{
 #if	IS_USE_KALMAN_FILTER
@@ -276,7 +275,6 @@ void VisionOrSensorDataDeal()
 		visionData.Yaw = navigation.Yaw;
 		csdata.unlock();
 	}
-	*/
 #else
 	water.RenewData();
 	if (water.IsRecievedData == true)
