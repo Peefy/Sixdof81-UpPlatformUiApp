@@ -426,7 +426,6 @@ void SixdofControl()
 			auto roll = RANGE(deltaroll + lastData.Roll, -MAX_DEG, MAX_DEG);
 			auto pitch = RANGE(deltapitch + lastData.Pitch, -MAX_DEG, MAX_DEG);
 			auto yaw = RANGE(deltayaw + lastData.Yaw, -MAX_DEG, MAX_DEG);
-			//double* pulse_dugu = Control(x, y, z, roll, yaw, pitch);
 			double* pulse_dugu = Control(x, y, z, roll + info.Roll, yaw, pitch + info.Pitch);
 #else
 			auto x = RANGE(0, -MAX_XYZ, MAX_XYZ);
