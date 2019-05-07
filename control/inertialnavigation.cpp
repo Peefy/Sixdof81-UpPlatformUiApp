@@ -7,7 +7,7 @@
 #define JUDGE_IS_START   if(IsRS422Start == false) return;
 #define JUDGE_IS_RECIEVE if(IsRecievedData == false) return;
 
-#define IS_USE_DELTA_PID 1
+//#define IS_USE_DELTA_PID 1
 
 InertialNavigation::InertialNavigation()
 {
@@ -236,7 +236,7 @@ void InertialNavigation::PidOut(double* roll, double *yaw, double* pitch)
 	//*yaw = MyDeltaPIDWithNoDelta(&yawPid, Yaw, finalYaw);
 	*roll = MyDeltaPID_Real(&pitchPid, -Pitch, finalPitch);
 #else
-	*roll = Pitch;
-	*pitch = Roll;
+	*roll = -Pitch;
+	*pitch = -Roll;
 #endif
 }
