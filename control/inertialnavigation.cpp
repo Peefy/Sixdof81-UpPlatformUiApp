@@ -185,8 +185,8 @@ void InertialNavigation::DecodeData()
 {
 	//1度等于60分，1分等于60秒
 	Roll = data.Roll * ANGLE_SCALE / 3600.0;
-	Yaw = data.Yaw * ANGLE_SCALE / 3600.0;
 	Pitch = data.Pitch * ANGLE_SCALE / 3600.0;
+	Yaw = data.Yaw * ANGLE_SCALE / 3600.0;
 	Lon = data.Longitude * LATLON_SCALE / 3600.0;
 	Lan = data.Latitude * LATLON_SCALE / 3600.0;
 	IsGyroError = STATUS_BIT_GET(data.StateByte, GYRO_ERR_BIT);
