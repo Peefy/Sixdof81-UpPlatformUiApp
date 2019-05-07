@@ -186,6 +186,7 @@ public:
 	void StartSins();
 	void Dispose();
 	void PidOut(double * roll, double * yaw, double * pitch);
+	void PidInit();
 	double Roll;
 	double Yaw;
 	double Pitch;
@@ -201,9 +202,6 @@ public:
 	bool IsNavigationError;
 	bool IsRS422Start;
 private:
-	double p;
-	double i;
-	double d;
 	void DecodeData();
 	RS422DataPackage data;
 	bool disposed;

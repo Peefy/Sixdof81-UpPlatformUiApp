@@ -297,13 +297,13 @@ void VisionOrSensorDataDeal()
 
 void SixdofControl()
 {
-	static double deltat = 0.026;
+	static double deltat = 0.031;
+	DWORD start_time = 0;
+	start_time = GetTickCount();
 	VisionOrSensorDataDeal();
 	Sleep(10);
 	if(closeDataThread == false)
 	{	
-		DWORD start_time = 0;
-		start_time = GetTickCount();
 		delta.RenewNowPulse();
 		auto delay = SIXDOF_CONTROL_DELEY;
 		double dis[AXES_COUNT] = {0};
@@ -420,20 +420,13 @@ void SixdofControl()
 			double deltapitch = 0;
 #if IS_USE_NAVIGATION
 			navigation.PidOut(&deltaroll, &deltayaw, &deltapitch);
-			auto posenow = delta.GetNowPoseFromLength();
-			//auto x = RANGE(lastData.X + deltax + posenow[0], -MAX_XYZ, MAX_XYZ);
-			//auto y = RANGE(lastData.Y + deltay + posenow[1], -MAX_XYZ, MAX_XYZ);
-			//auto z = RANGE(lastData.Z + deltaz + posenow[2], -MAX_XYZ, MAX_XYZ);
-			//auto roll = RANGE(lastData.Roll + deltaroll + posenow[3], -MAX_DEG, MAX_DEG);
-			//auto pitch = RANGE(lastData.Pitch + deltapitch + posenow[4], -MAX_DEG, MAX_DEG);
-			//auto yaw = RANGE(lastData.Yaw + deltayaw + posenow[5], -MAX_DEG, MAX_DEG);
-			//double* pulse_dugu = Control(x, y, z, roll + info.Roll, yaw, pitch + info.Pitch);
-			auto x = RANGE(0 - deltax + posenow[0], -MAX_XYZ, MAX_XYZ);
-			auto y = RANGE(0 - deltay + posenow[1], -MAX_XYZ, MAX_XYZ);
-			auto z = RANGE(0 - deltaz + posenow[2], -MAX_XYZ, MAX_XYZ);
-			auto roll = RANGE(0 - deltaroll + posenow[3], -MAX_DEG, MAX_DEG);
-			auto pitch = RANGE(0 - deltapitch + posenow[4], -MAX_DEG, MAX_DEG);
-			auto yaw = RANGE(0 - deltayaw + posenow[5], -MAX_DEG, MAX_DEG);
+			auto x = RANGE(deltax + lastData.X, -MAX_XYZ, MAX_XYZ);
+			auto y = RANGE(deltay + lastData.Y, -MAX_XYZ, MAX_XYZ);
+			auto z = RANGE(deltaz + lastData.Z, -MAX_XYZ, MAX_XYZ);
+			auto roll = RANGE(deltaroll + lastData.Roll, -MAX_DEG, MAX_DEG);
+			auto pitch = RANGE(deltapitch + lastData.Pitch, -MAX_DEG, MAX_DEG);
+			auto yaw = RANGE(deltayaw + lastData.Yaw, -MAX_DEG, MAX_DEG);
+			//double* pulse_dugu = Control(x, y, z, roll, yaw, pitch);
 			double* pulse_dugu = Control(x, y, z, roll + info.Roll, yaw, pitch + info.Pitch);
 #else
 			auto x = RANGE(0, -MAX_XYZ, MAX_XYZ);
@@ -468,9 +461,9 @@ void SixdofControl()
 			delta.PidCsp(dis);
 		}
 		Sleep(delay);
-		DWORD end_time = GetTickCount();
-		runTime = end_time - start_time;
 	}
+	DWORD end_time = GetTickCount();
+	runTime = end_time - start_time;
 }
 
 void MoveValPoint()
@@ -1224,6 +1217,7 @@ void CECATSampleDlg::OnBnClickedBtnStart()
 	delta.GetMotionAveragePulse();
 	delta.UnlockServo();
 	delta.PidControllerInit();
+	navigation.PidInit();
 	// 正常使用模式
 	isTest = false;
 	isCosMode = false;
@@ -1252,6 +1246,7 @@ void CECATSampleDlg::OnBnClickedBtnStopme()
 		}
 	}
 	ResetDefaultData(&data);
+	ResetDefaultData(&lastData);
 }
 
 void CECATSampleDlg::OnBnClickedBtnDown()
@@ -1368,12 +1363,12 @@ void CECATSampleDlg::OnBnClickedButtonTest()
 	testPhase[4] = pitchphase;
 	testPhase[5] = yawphase;
 
-	testPhase[0] = xzeropos;
-	testPhase[1] = yzeropos;
-	testPhase[2] = zzeropos;
-	testPhase[3] = rollzeropos;
-	testPhase[4] = pitchzeropos;
-	testPhase[5] = yawzeropos;
+	testZeroPos[0] = xzeropos;
+	testZeroPos[1] = yzeropos;
+	testZeroPos[2] = zzeropos;
+	testZeroPos[3] = rollzeropos;
+	testZeroPos[4] = pitchzeropos;
+	testZeroPos[5] = yawzeropos;
 
 	if (xphase != 0 || yphase != 0 || zphase != 0 || 
 		rollphase != 0 || pitchphase != 0 || yawphase != 0)

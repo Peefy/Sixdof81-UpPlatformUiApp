@@ -74,7 +74,7 @@ using namespace std;
 #define DistanceBetweenHingeBottom  190.0
 
 // 上升到中立位电机需要转动的圈数
-#define RISE_R 16.07
+#define RISE_R 16.07143
 
 // 单位mm/s
 #define RISE_VEL 0.3

@@ -128,6 +128,7 @@ typedef enum
 extern char * SixDofStatusText[];
 
 void ResetDefaultData(DataPackage * data);
+void ResetDefaultData(DataPackageDouble * data);
 void PrintDataPackageToString(DataPackage data);
 
 #endif

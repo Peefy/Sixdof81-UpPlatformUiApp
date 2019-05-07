@@ -1,7 +1,7 @@
 ﻿{
-    "naviP" : 0.0001,
-    "naviI" : 0.0000001,
-    "naviD" : 0.0000001,
+    "naviP" : 0.025,
+    "naviI" : 0.00003,
+    "naviD" : 0.0,
     "rollScale" : 1.0,
     "yawScale" : 2.0,
     "pitchScale" : -1.0,
