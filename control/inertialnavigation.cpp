@@ -2,6 +2,7 @@
 #include "stdafx.h"
 #include "inertialnavigation.h"
 #include "pid.h"
+#include "Com.h"
 #include "../config/inihelper.h"
 
 #define JUDGE_IS_START   if(IsRS422Start == false) return;
@@ -38,14 +39,15 @@ string InertialNavigation::GetIntroduction() const
 
 bool InertialNavigation::Open()
 {
-	IsRS422Start = serialPort.InitPort(RS422_PORT_NUMBER, RS422_PORT_BAUDRATE) == true;
-	//IsRS422Start = OpenCOMDevice(RS422_PORT_NUMBER, RS422_PORT_BAUDRATE) == 0;
+	//IsRS422Start = serialPort.InitPort(RS422_PORT_NUMBER, RS422_PORT_BAUDRATE) == true;
+	IsRS422Start = OpenCOMDevice(RS422_PORT_NUMBER, RS422_PORT_BAUDRATE) == 0;
 	return IsRS422Start;
 }
 
 bool InertialNavigation::Open(int port)
 {
-	IsRS422Start = serialPort.InitPort(port, RS422_PORT_BAUDRATE) == true;
+	//IsRS422Start = serialPort.InitPort(port, RS422_PORT_BAUDRATE) == true;
+	IsRS422Start = OpenCOMDevice(port, RS422_PORT_BAUDRATE) == 0;
 	return IsRS422Start;
 }
 
@@ -75,6 +77,7 @@ void InertialNavigation::RenewData()
 	{
 		return;
 	}
+	/*
 	auto nowlength = serialPort.GetBytesInCOM();
 	unsigned char cRecved = 0;
 	for (int i = 0; i < nowlength; ++i)
@@ -82,7 +85,9 @@ void InertialNavigation::RenewData()
 		serialPort.ReadChar(cRecved);
 		chrTemp[i] = cRecved;
 	}
-	usRxLength += nowlength;
+	*/
+	usRxLength = CollectUARTData(RS422_PORT_NUMBER, chrTemp);
+	usRxLength += usRxLength;
 	while (usRxLength >= RS422_DATA_PACKAGE_LEGNTH)
 	{
 		if (chrTemp[0] != RS422_DATA_HEAD_ONE)
@@ -185,8 +190,8 @@ void InertialNavigation::RS422SendString(string strs)
 	unsigned int length = strs.length();
 	const char* cstr = strs.c_str();
 	memcpy(ucstr, cstr, sizeof(unsigned char) * length);
-	serialPort.WriteData(ucstr, length);
-	//SendUARTMessageLength(RS422_PORT_NUMBER, strs.c_str(), strs.length());
+	//serialPort.WriteData(ucstr, length);
+	SendUARTMessageLength(RS422_PORT_NUMBER, strs.c_str(), strs.length());
 }
 
 void InertialNavigation::DecodeData()

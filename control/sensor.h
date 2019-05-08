@@ -10,7 +10,7 @@
 #define SENSOR_PORT1 4
 #define SENSOR_PORT2 5
 #define SENSOR_PORT3 6
-#define SENSOR_BAUD 9600
+#define SENSOR_BAUD 115200
 
 #define ANGLE_COUNT 3
 
@@ -67,7 +67,7 @@ private:
 	SensorInfo_t readInfo;
 	SensorInfo_t lastinfo;
 	CJY901 hardware;
-	CSerialPort serialPort;
+	//CSerialPort serialPort;
 	char chrBuffer[2000];
 	void init(SensorInfo_t* info);
 };

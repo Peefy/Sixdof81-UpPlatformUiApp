@@ -1,6 +1,7 @@
 
 #include "stdafx.h"
 #include "sensor.h"
+#include "Com.h"
 
 #include <math.h>
 
@@ -29,13 +30,15 @@ Sensor::~Sensor()
 SensorInfo_t Sensor::ProvideSensorInfo()
 {
 	unsigned short usLength = 0, usCnt = 0;
+	/*
 	usLength = serialPort.GetBytesInCOM();
 	unsigned char cRecved;
 	for (int i = 0; i < usLength; ++i)
 	{
 		serialPort.ReadChar(cRecved);
 		chrBuffer[i] = cRecved;
-	}
+	}*/
+	usLength = CollectUARTData(this->port, chrBuffer);
 	if (usLength > 0)
 	{
 		hardware.CopeSerialData(chrBuffer, usLength);
@@ -64,13 +67,14 @@ bool Sensor::IsReady()
 
 bool Sensor::openPort(int i, int baud)
 {
-	isStart = serialPort.InitPort(i, baud) == true;
+	//isStart = serialPort.InitPort(i, baud) == true;
+	isStart = OpenCOMDevice(i, SENSOR_BAUD) == 1;
 	return isStart;
 }
 
 bool Sensor::closePort()
 {
-	//CloseCOMDevice();
+	CloseCOMDevice();
 	isStart = false;
 	return isStart;
 }
