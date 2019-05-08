@@ -1,7 +1,6 @@
 
 #include "stdafx.h"
 #include "sensor.h"
-#include "Com.h"
 
 #include <math.h>
 
@@ -10,8 +9,8 @@ Sensor::Sensor(int port)
 	init(&info);
 	init(&offsetinfo);
 	init(&readInfo);
-	this->port = port;
-	openPort(port, SENSOR_BAUD);
+	this->port = SENSOR_PORT1;
+	openPort(SENSOR_PORT1, SENSOR_BAUD);
 }
 
 Sensor::Sensor()
@@ -19,6 +18,7 @@ Sensor::Sensor()
 	init(&info); 
 	init(&offsetinfo);
 	init(&readInfo);
+	this->port = SENSOR_PORT1;
 	openPort(SENSOR_PORT1, SENSOR_BAUD);
 }
 
@@ -29,7 +29,7 @@ Sensor::~Sensor()
 
 SensorInfo_t Sensor::ProvideSensorInfo()
 {
-	unsigned short usLength = 0, usCnt = 0;
+	unsigned short usLength = 0;
 	/*
 	usLength = serialPort.GetBytesInCOM();
 	unsigned char cRecved;
@@ -38,7 +38,8 @@ SensorInfo_t Sensor::ProvideSensorInfo()
 		serialPort.ReadChar(cRecved);
 		chrBuffer[i] = cRecved;
 	}*/
-	usLength = CollectUARTData(this->port, chrBuffer);
+	usLength = serialPort.GetCOMData(uchrBuffer);
+	memcpy(chrBuffer, uchrBuffer, usLength);
 	if (usLength > 0)
 	{
 		hardware.CopeSerialData(chrBuffer, usLength);
@@ -68,13 +69,14 @@ bool Sensor::IsReady()
 bool Sensor::openPort(int i, int baud)
 {
 	//isStart = serialPort.InitPort(i, baud) == true;
-	isStart = OpenCOMDevice(i, SENSOR_BAUD) == 1;
+	//isStart = OpenCOMDevice(SENSOR_PORT1, SENSOR_BAUD) == 0;
+	isStart = serialPort.InitCOM(SENSOR_PORT1, SENSOR_BAUD, 1, 1, 8);
 	return isStart;
 }
 
 bool Sensor::closePort()
 {
-	CloseCOMDevice();
+	serialPort.closeCOM();
 	isStart = false;
 	return isStart;
 }

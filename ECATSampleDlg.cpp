@@ -24,7 +24,6 @@
 #include "control/kalman_filter.h"
 #include "control/inertialnavigation.h"
 #include "control/water.h"
-#include "control/landvision.h"
 #include "control/illusion.h"
 
 #include "ui/uiconfig.h"

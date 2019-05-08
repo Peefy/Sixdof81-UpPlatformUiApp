@@ -8,6 +8,7 @@
 #include <algorithm>
 
 #include "../communication/SerialPort.h"
+#include "Com.h"
 
 using namespace std;
 
@@ -104,7 +105,7 @@ using namespace std;
 
 #define STATUS_BIT_GET(var, n)     (((var) >> (n)) & 0x01)  
 
-#define RS422_BUFFER_LENGTH    4096
+#define RS422_BUFFER_LENGTH    10240
 
 #define CHECK_BYTE_INDEX 80
 #define CHECK_BYTE_CAL_START_INDEX  2
@@ -207,6 +208,7 @@ private:
 	bool disposed;
 	void DataInit();
 	//CSerialPort serialPort;
+	CCOM serialPort;
 protected:
 	bool JudgeCheckByte(char * chars);
 	void RS422SendString(string strs);
