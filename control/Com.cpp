@@ -100,7 +100,6 @@ void CCOM::closeCOM()
 	}
 }
 
-
 int CCOM::GetCOMInfo(void)
 {
 	return -1;

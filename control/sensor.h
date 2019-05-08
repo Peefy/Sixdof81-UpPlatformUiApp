@@ -5,13 +5,12 @@
 #include <stdint.h>
 
 #include "../communication/SerialPort.h"
-#include "Com.h"
 #include "JY901.h"
 
 #define SENSOR_PORT1 4
 #define SENSOR_PORT2 5
 #define SENSOR_PORT3 6
-#define SENSOR_BAUD 115200
+#define SENSOR_BAUD 9600
 
 #define ANGLE_COUNT 3
 
@@ -68,10 +67,8 @@ private:
 	SensorInfo_t readInfo;
 	SensorInfo_t lastinfo;
 	CJY901 hardware;
-	//CSerialPort serialPort;
-	CCOM serialPort;
-	char chrBuffer[10240];
-	unsigned char uchrBuffer[10240];
+	CSerialPort serialPort;
+	char chrBuffer[2000];
 	void init(SensorInfo_t* info);
 };
 
