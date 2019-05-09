@@ -82,7 +82,6 @@ void InertialNavigation::RenewData()
 	{
 		return;
 	}
-	
 	auto nowlength = serialPort.GetBytesInCOM();
 	unsigned char cRecved = 0;
 	for (int i = 0; i < nowlength; ++i)
