@@ -126,11 +126,14 @@ bool InertialNavigation::GatherData()
 		return false;
 	}
 	// 数据帧处理相关
-	static int uiRemainLength;
-	static UCHAR chData[READBUFFER + 102400];
-	static UCHAR *pch;
-	static unsigned long ulFrameNum;
-	static unsigned long ulFrameErr;
+	static int uiRemainLength = 0;
+	// 数据队列
+	static UCHAR chData[READBUFFER + 102400] = {0};
+	// 队列指针
+	static UCHAR *pch = chData;
+	// 接收到的数据帧个数
+	static unsigned long ulFrameNum = 0;
+	static unsigned long ulFrameErr = 0;
 	int i = 0;
 	UCHAR chReadData[READBUFFER];
 	unsigned int uiReceived = (int)serialPort.GetCOMData(chReadData);
