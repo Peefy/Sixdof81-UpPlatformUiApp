@@ -41,24 +41,24 @@ string InertialNavigation::GetIntroduction() const
 
 bool InertialNavigation::Open()
 {
-	//IsRS422Start = serialPort.InitPort(RS422_PORT_NUMBER, RS422_PORT_BAUDRATE) == true;
+	IsRS422Start = serialPort.InitPort(RS422_PORT_NUMBER, RS422_PORT_BAUDRATE) == true;
 	//IsRS422Start = OpenCOMDevice(RS422_PORT_NUMBER, RS422_PORT_BAUDRATE) == 0;
-	IsRS422Start = serialPort.InitCOM(RS422_PORT_NUMBER, RS422_PORT_BAUDRATE, 1, 0, 8);
+	//IsRS422Start = serialPort.InitCOM(RS422_PORT_NUMBER, RS422_PORT_BAUDRATE, 1, 0, 8);
 	return IsRS422Start;
 }
 
 bool InertialNavigation::Open(int port)
 {
-	//IsRS422Start = serialPort.InitPort(port, RS422_PORT_BAUDRATE) == true;
+	IsRS422Start = serialPort.InitPort(port, RS422_PORT_BAUDRATE) == true;
 	//IsRS422Start = OpenCOMDevice(port, RS422_PORT_BAUDRATE) == 0;
-	IsRS422Start = serialPort.InitCOM(port, RS422_PORT_BAUDRATE, 1, 0, 8);
+	//IsRS422Start = serialPort.InitCOM(port, RS422_PORT_BAUDRATE, 1, 0, 8);
 	return IsRS422Start;
 }
 
 bool InertialNavigation::Close()
 {
 	//CloseCOMDevice();
-	serialPort.closeCOM();
+	//serialPort.closeCOM();
 	IsRS422Start = false;
 	return IsRS422Start;
 }
@@ -82,21 +82,16 @@ void InertialNavigation::RenewData()
 	{
 		return;
 	}
-	/*
+	
 	auto nowlength = serialPort.GetBytesInCOM();
-	if (nowlength < RS422_DATA_PACKAGE_LEGNTH)
-	{
-		return;
-	}
 	unsigned char cRecved = 0;
 	for (int i = 0; i < nowlength; ++i)
 	{
 		serialPort.ReadChar(cRecved);
 		chrTemp[i] = cRecved;
 	}
-	*/
 	//auto nowlength = CollectUARTData(RS422_PORT_NUMBER, chrTemp);
-	auto nowlength = serialPort.GetCOMData(chrTemp);
+	//auto nowlength = serialPort.GetCOMData(chrTemp);
 	usRxLength += nowlength;
 	while (usRxLength >= RS422_DATA_PACKAGE_LEGNTH)
 	{
@@ -127,52 +122,42 @@ bool InertialNavigation::GatherData()
 	}
 	// 数据帧处理相关
 	static int uiRemainLength = 0;
-	// 数据队列
-	static UCHAR chData[READBUFFER + 102400] = {0};
-	// 队列指针
-	static UCHAR *pch = chData;
-	// 接收到的数据帧个数
 	static unsigned long ulFrameNum = 0;
 	static unsigned long ulFrameErr = 0;
-	int i = 0;
-	UCHAR chReadData[READBUFFER];
-	unsigned int uiReceived = (int)serialPort.GetCOMData(chReadData);
+	static UCHAR chData[READBUFFER + 102400] = {0};
+	static UCHAR *pch = chData;
+	int i;
+	UCHAR chReadData[READBUFFER] = {0};
+	//unsigned int uiReceived = (int)serialPort.GetCOMData(chReadData);
+	unsigned int uiReceived = serialPort.GetBytesInCOM();
+	unsigned char cRecved = 0;
+	for (int i = 0; i < uiReceived; ++i)
+	{
+		serialPort.ReadChar(cRecved);
+		chReadData[i] = cRecved;
+	}
 	if(uiReceived == 0)
 	{
 		return false;		
 	}
 	memcpy(pch, chReadData, uiReceived);    //将数据置于chData[]中
+	i = 0;
 	int j = uiRemainLength + uiReceived - FRAME_LENGTH;
 	while(i <= j)
 	{
 		UCHAR *pData = &chData[i];
-		if((pData[0] == 0x10) && (pData[1] == 0x2a) && 
-			(pData[FRAME_LENGTH - 2] == 0x10) && 
-			(pData[FRAME_LENGTH - 1] == 0x03))
-		{
-			unsigned char checksum = 0;
-			for (int k = 2; k <= 79; k++)
-				checksum += pData[k];
-			checksum &= 0xff;
-			if((pData[FRAME_LENGTH - 3] == (checksum & 0xFF)))
-			{
-				ulFrameNum++;
-				memcpy(&data, &pData[0], RS422_DATA_PACKAGE_LEGNTH);
-				i += FRAME_LENGTH;		
-				DecodeData();
-				IsRecievedData = true;
-				continue;
-			}
-			else
-			{
-				i++;
-				ulFrameErr++;
-			}
-		}		
+		if((pData[0] == 0x10) && ( pData[1] == 0x2a) && 
+			( pData[FRAME_LENGTH-2] == 0x10)&& ( pData[FRAME_LENGTH-1] == 0x03))
+		{       	
+			ulFrameNum++;
+			memcpy(&data, &pData[0], FRAME_LENGTH);
+			DecodeData();
+			i += FRAME_LENGTH;		
+			continue;
+		}
 		else
 		{
-			i++;
-			//ulFrameErr++;				
+			i += 1;
 		}
 	}
 	uiRemainLength += uiReceived - i;
@@ -266,9 +251,9 @@ void InertialNavigation::RS422SendString(string strs)
 	unsigned int length = strs.length();
 	const char* cstr = strs.c_str();
 	memcpy(ucstr, cstr, sizeof(unsigned char) * length);
-	//serialPort.WriteData(ucstr, length);
+	serialPort.WriteData(ucstr, length);
 	//SendUARTMessageLength(RS422_PORT_NUMBER, strs.c_str(), strs.length());
-	serialPort.SendCOMCode(ucstr, length);
+	//serialPort.SendCOMCode(ucstr, length);
 }
 
 void InertialNavigation::DecodeData()

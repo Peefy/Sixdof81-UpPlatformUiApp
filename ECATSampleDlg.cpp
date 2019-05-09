@@ -744,7 +744,10 @@ void CECATSampleDlg::AppInit()
 		DistanceBetweenHingeBottom);
 	OpenThread();
 #if IS_USE_NAVIGATION
-	navigation.Open();
+	if (navigation.Open() == false)
+	{
+		MessageBox(L"惯导串口打开失败");
+	}
 #else
 	water.Open();
 #endif

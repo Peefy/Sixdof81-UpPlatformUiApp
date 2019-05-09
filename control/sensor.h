@@ -73,7 +73,6 @@ private:
 	CJY901 hardware;
 	//CSerialPort serialPort;
 	CCOM serialPort;
-	
 	void init(SensorInfo_t* info);
 };
 
