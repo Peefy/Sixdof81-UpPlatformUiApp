@@ -43,7 +43,7 @@ bool InertialNavigation::Open()
 {
 	//IsRS422Start = serialPort.InitPort(RS422_PORT_NUMBER, RS422_PORT_BAUDRATE) == true;
 	//IsRS422Start = OpenCOMDevice(RS422_PORT_NUMBER, RS422_PORT_BAUDRATE) == 0;
-	IsRS422Start = serialPort.InitCOM(RS422_PORT_NUMBER, RS422_PORT_BAUDRATE, 1, 1, 8);
+	IsRS422Start = serialPort.InitCOM(RS422_PORT_NUMBER, RS422_PORT_BAUDRATE, 1, 0, 8);
 	return IsRS422Start;
 }
 

@@ -80,25 +80,26 @@ SensorInfo_t Sensor::GatherData()
 	}
 	// 数据帧处理相关
 	static int uiRemainLength = 0;
-	static UCHAR chData[READBUFFER + 102400] = {0};
-	static UCHAR *pch = chData;
 	static unsigned long ulFrameNum = 0;
 	static unsigned long ulFrameErr = 0;
+	static UCHAR chData[READBUFFER + 102400] = {0};
+	static UCHAR *pch = chData;
 	static struct SAngle angle;
-	int i = 0;
-	UCHAR chReadData[READBUFFER];
+	int i;
+	UCHAR chReadData[READBUFFER] = {0};
 	unsigned int uiReceived = (int)serialPort.GetCOMData(chReadData);
 	if(uiReceived == 0)
 	{
-		return offsetinfo;		
+		return info;		
 	}
 	memcpy(pch, chReadData, uiReceived);    //将数据置于chData[]中
-	int j = uiRemainLength + uiReceived - 11;
+	i = 0;
+	int j = uiRemainLength + uiReceived - 44;
 	while(i <= j)
 	{
 		UCHAR *pData = &chData[i];
 		if((pData[0] == 0x55) && (pData[1] == 0x53))
-		{
+		{       	
 			ulFrameNum++;
 			memcpy(&angle, &pData[2], 8);
 			readInfo.Roll = angle.Angle[0] / SENSOR_MAX_AD_VAL * MPU6050_MAX_ANGLE;
@@ -107,22 +108,12 @@ SensorInfo_t Sensor::GatherData()
 			info.Roll = readInfo.Roll - offsetinfo.Roll;
 			info.Pitch = readInfo.Pitch - offsetinfo.Pitch;
 			info.Yaw = readInfo.Yaw - offsetinfo.Yaw;
-			i += 11;		
-			continue;
-		}		
-		else if ((pData[0] == 0x55) && 
-			(pData[1] == 0x50 || pData[1] == 0x51 || 
-			pData[1] == 0x52 || pData[1] == 0x54 || 
-			pData[1] == 0x55 || pData[1] == 0x56 || 
-			pData[1] == 0x57 || pData[1] == 0x58 ))
-		{
-			i += 11;
+			i += 44;		
 			continue;
 		}
 		else
 		{
-			i++;
-			//ulFrameErr++;				
+			i += 1;
 		}
 	}
 	uiRemainLength += uiReceived - i;
@@ -144,7 +135,7 @@ bool Sensor::openPort(int i, int baud)
 {
 	//isStart = serialPort.InitPort(i, baud) == true;
 	//isStart = OpenCOMDevice(SENSOR_PORT1, SENSOR_BAUD) == 0;
-	isStart = serialPort.InitCOM(i, baud, 1, 1, 8);
+	isStart = serialPort.InitCOM(i, baud, 1, 0, 8);
 	return isStart;
 }
 
