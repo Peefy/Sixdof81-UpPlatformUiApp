@@ -208,8 +208,8 @@ private:
 	RS422DataPackage data;
 	bool disposed;
 	void DataInit();
-	//CSerialPort serialPort;
-	CCOM serialPort;
+	CSerialPort serialPort;
+	//CCOM serialPort;
 protected:
 	bool JudgeCheckByte(char * chars);
 	void RS422SendString(string strs);
