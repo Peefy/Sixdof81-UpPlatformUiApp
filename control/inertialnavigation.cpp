@@ -9,6 +9,9 @@
 
 #define IS_USE_DELTA_PID 1
 
+#define FRAME_LENGTH 83
+#define DATA_NUM 21
+
 static double p = 0.001;
 static double i = 0.0001;
 static double d = 0.000001;
@@ -81,6 +84,10 @@ void InertialNavigation::RenewData()
 	}
 	/*
 	auto nowlength = serialPort.GetBytesInCOM();
+	if (nowlength < RS422_DATA_PACKAGE_LEGNTH)
+	{
+		return;
+	}
 	unsigned char cRecved = 0;
 	for (int i = 0; i < nowlength; ++i)
 	{
@@ -110,6 +117,69 @@ void InertialNavigation::RenewData()
 		DecodeData();
 		IsRecievedData = true;
 	}
+}
+
+bool InertialNavigation::GatherData()
+{
+	if (IsRS422Start == false)
+	{
+		return false;
+	}
+	// 数据帧处理相关
+	static int uiRemainLength;
+	static UCHAR chData[READBUFFER + 102400];
+	static UCHAR *pch;
+	static unsigned long ulFrameNum;
+	static unsigned long ulFrameErr;
+	int i = 0;
+	UCHAR chReadData[READBUFFER];
+	unsigned int uiReceived = (int)serialPort.GetCOMData(chReadData);
+	if(uiReceived == 0)
+	{
+		return false;		
+	}
+	memcpy(pch, chReadData, uiReceived);    //将数据置于chData[]中
+	int j = uiRemainLength + uiReceived - FRAME_LENGTH;
+	while(i <= j)
+	{
+		UCHAR *pData = &chData[i];
+		if((pData[0] == 0x10) && (pData[1] == 0x2a) && 
+			(pData[FRAME_LENGTH - 2] == 0x10) && 
+			(pData[FRAME_LENGTH - 1] == 0x03))
+		{
+			unsigned char checksum = 0;
+			for (int k = 2; k <= 79; k++)
+				checksum += pData[k];
+			checksum &= 0xff;
+			if((pData[FRAME_LENGTH - 3] == (checksum & 0xFF)))
+			{
+				ulFrameNum++;
+				memcpy(&data, &pData[0], RS422_DATA_PACKAGE_LEGNTH);
+				i += FRAME_LENGTH;		
+				DecodeData();
+				IsRecievedData = true;
+				continue;
+			}
+			else
+			{
+				i++;
+				ulFrameErr++;
+			}
+		}		
+		else
+		{
+			i++;
+			//ulFrameErr++;				
+		}
+	}
+	uiRemainLength += uiReceived - i;
+	if(uiRemainLength != 0)
+	{
+		memcpy(chReadData, &chData[i], uiRemainLength);
+		memcpy(chData, chReadData, uiRemainLength);
+	}
+	pch = &chData[uiRemainLength];
+	return true;
 }
 
 int InertialNavigation::GetBufferLength()
@@ -201,8 +271,8 @@ void InertialNavigation::RS422SendString(string strs)
 void InertialNavigation::DecodeData()
 {
 	//1度等于60分，1分等于60秒
-	Roll = data.Roll * ANGLE_SCALE / 3600.0;
-	Pitch = data.Pitch * ANGLE_SCALE / 3600.0;
+	Pitch = -data.Roll * ANGLE_SCALE / 3600.0;
+	Roll = -data.Pitch * ANGLE_SCALE / 3600.0;
 	Yaw = data.Yaw * ANGLE_SCALE / 3600.0;
 	Lon = data.Longitude * LATLON_SCALE / 3600.0;
 	Lan = data.Latitude * LATLON_SCALE / 3600.0;
@@ -252,7 +322,6 @@ void InertialNavigation::PidInit()
 
 void InertialNavigation::PidOut(double* roll, double *yaw, double* pitch)
 {
-
 	const double finalRoll = 0;
 	const double finalPitch = 0;
 	const double finalYaw = 0;
@@ -261,8 +330,8 @@ void InertialNavigation::PidOut(double* roll, double *yaw, double* pitch)
 	static double initYaw = 0;
 	JUDGE_IS_RECIEVE;
 #if IS_USE_DELTA_PID
-	*pitch = MyDeltaPID_Real(&rollPid, -Roll, finalRoll);
-	*roll = MyDeltaPID_Real(&pitchPid, -Pitch, finalPitch);
+	*pitch = MyDeltaPID_Real(&rollPid, Pitch, finalRoll);
+	*roll = MyDeltaPID_Real(&pitchPid, Roll, finalPitch);
 	//*yaw = MyDeltaPID_Real(&yawPid, Yaw, finalYaw);
 #else
 	*roll = -Pitch;

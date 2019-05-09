@@ -257,8 +257,8 @@ void SensorRead()
 void VisionOrSensorDataDeal()
 {
 #if IS_USE_NAVIGATION
-	navigation.RenewData();
-	info = sensor.ProvideSensorInfo();
+	navigation.GatherData();
+	info = sensor.GatherData();
 	if (csdata.try_lock())
 	{
 #if	IS_USE_KALMAN_FILTER
@@ -1090,7 +1090,7 @@ void CECATSampleDlg::OnTimer(UINT nIDEvent)
 	
 	if (csdata.try_lock())
 	{
-		statusStr.Format(_T("1:%.2f 2:%.2f 3:%.2f 4:%.2f 5:%.2f 6:%.2f"),
+		statusStr.Format(_T("1:%.2f 2:%.2f 3:%.2f 4:%.4f 5:%.4f 6:%.4f"),
 			visionData.X, visionData.Y, visionData.Z,
 			visionData.Roll, visionData.Pitch, visionData.Yaw);
 		csdata.unlock();

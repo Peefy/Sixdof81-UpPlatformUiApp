@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "../communication/SerialPort.h"
+#include "Com.h"
 #include "JY901.h"
 
 #define SENSOR_PORT1 4
@@ -39,6 +40,8 @@
 #define ACC_GYRO_Y_INDEX 1
 #define ACC_GYRO_Z_INDEX 2
 
+#define SENSOR_BUFFER_LENGTH 10240
+
 typedef struct
 {
 	double Roll;
@@ -55,6 +58,7 @@ public:
 	Sensor();
 	~Sensor();
 	SensorInfo_t ProvideSensorInfo();
+	SensorInfo_t GatherData();
 	bool IsReady();
 	bool isStart;
 	int port;
@@ -67,8 +71,9 @@ private:
 	SensorInfo_t readInfo;
 	SensorInfo_t lastinfo;
 	CJY901 hardware;
-	CSerialPort serialPort;
-	char chrBuffer[2000];
+	//CSerialPort serialPort;
+	CCOM serialPort;
+	
 	void init(SensorInfo_t* info);
 };
 

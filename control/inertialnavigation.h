@@ -174,6 +174,7 @@ public:
 	bool Open(int port);
 	bool Close();
 	void RenewData();
+	bool GatherData();
 	int GetBufferLength();
 	void SetDefaultAlignment(double lat, double lon, double height);
 	void SetGpsPoleLength(double x, double y, double z);
