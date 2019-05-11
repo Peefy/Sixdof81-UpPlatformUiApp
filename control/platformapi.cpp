@@ -2,19 +2,20 @@
 #include "stdafx.h"
 #include "platformapi.h"
 
-#define API_BUFFER_QUEUE_LENGTH 10000
-#define READ_BUFFER_LENGTH      4096
+#define API_BUFFER_QUEUE_LENGTH   10000
+#define READ_BUFFER_LENGTH        4096
 
 ApiControl::ApiControl() : 
 	IsRecievedData(false), 
-	IsStart(false)
+	IsStart(false),
+	ControlCommand(ApiControlCommandInt32::API_CTL_CMD_NONE)
 {
-
+	Open();
 }
 
 ApiControl::~ApiControl()
 {
-
+	Close();
 }
 
 bool ApiControl::Open()
@@ -60,10 +61,12 @@ void ApiControl::GatherData()
 		if((pData[0] == API_DATA_HEAD_ONE) && 
 			(pData[1] == API_DATA_HEAD_TWO) && 
 			(pData[length - 2] == API_DATA_TAIL_ONE) && 
-			(pData[length - 1] == API_DATA_TAIL_TWO))
+			(pData[length - 1] == API_DATA_TAIL_TWO) &&
+			JudgeCheckByte(pData, pData[length - 3], 0, length - 4))
 		{       	
 			memcpy(&Data, &pData[0], length);
 			IsRecievedData = true;
+			ControlCommand = static_cast<ApiControlCommandInt32>(Data.ControlCommand);
 			i += length;		
 			continue;
 		}
@@ -81,3 +84,13 @@ void ApiControl::GatherData()
 	pch = &chData[uiRemainLength];
 }
 
+bool ApiControl::JudgeCheckByte(UCHAR* pData, UCHAR check, int startindex, int length)
+{
+	UCHAR b = 0;
+	for (int i = startindex; i < length + startindex; ++i)
+	{
+		b |= pData[startindex];
+	}
+	return true;
+	//return b == check;
+}

@@ -142,7 +142,7 @@ double chartYawValPoint[CHART_POINT_NUM] = { 0 };
 double runTime = 0;
 double chartTime = 0;
 
-int apiCtrlComand = 0;
+ApiControlCommandInt32 apiCtrlComand = ApiControlCommandInt32::API_CTL_CMD_NONE;
 
 kalman1_state kalman_rollFilter;
 kalman1_state kalman_yawFilter;
@@ -182,7 +182,7 @@ DWORD WINAPI SceneInfoThread(LPVOID pParam)
 		apiControl.GatherData();
 		if (ctrlCommandLockobj.try_lock())
 		{
-			apiCtrlComand = apiControl.Data.ControlCommand;
+			apiCtrlComand = apiControl.ControlCommand;
 			ctrlCommandLockobj.unlock();
 		}
 		Sleep(SCENE_THREAD_DELAY);
@@ -272,7 +272,7 @@ void CECATSampleDlg::JudgeControlCommand()
 	{
 		switch (apiCtrlComand)
 		{
-		case API_CTL_CMD_RISE_INT32:
+		case ApiControlCommandInt32::API_CTL_CMD_RISE_INT32:
 			// Rise
 			if (status == SIXDOF_STATUS_BOTTOM || status == SIXDOF_STATUS_ISFALLING)
 			{
@@ -283,30 +283,30 @@ void CECATSampleDlg::JudgeControlCommand()
 				OnCommandStopme();
 			}
 			break;
-		case API_CTL_CMD_DOWN_INT32:
+		case ApiControlCommandInt32::API_CTL_CMD_DOWN_INT32:
 			// Down
 			OnBnClickedBtnDown();
 			break;
-		case API_CTL_CMD_CONNECT_INT32:
+		case ApiControlCommandInt32::API_CTL_CMD_CONNECT_INT32:
 			// Run
 			OnBnClickedBtnStart();
 			break;
-		case API_CTL_CMD_DISCONNECT_INT32:
+		case ApiControlCommandInt32::API_CTL_CMD_DISCONNECT_INT32:
 			// StopAndMiddle
 			OnCommandStopme();
 			break;
-		case API_CTL_CMD_PAUSE_INT32:
+		case ApiControlCommandInt32::API_CTL_CMD_PAUSE_INT32:
 			closeDataThread = true;
 			delta.ServoStop();
 			break;
-		case API_CTL_CMD_RECOVER_INT32:
+		case ApiControlCommandInt32::API_CTL_CMD_RECOVER_INT32:
 			// Run
 			OnBnClickedBtnStart();
 			break;
 		default:
 			break;
 		}
-		apiCtrlComand = 0;
+		apiCtrlComand = ApiControlCommandInt32::API_CTL_CMD_NONE;
 		ctrlCommandLockobj.unlock();
 	}
 }
