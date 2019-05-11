@@ -106,7 +106,7 @@ bool Water::GatherData()
 	while(i <= j)
 	{
 		UCHAR *pData = &chData[i];
-		if((pData[0] ==  PACKAGE_HEADER1) && ( pData[1] == PACKAGE_HEADER2))
+		if((pData[0] == PACKAGE_HEADER1) && (pData[1] == PACKAGE_HEADER2))
 		{       	
 			ulFrameNum++;
 			memcpy(&downData, &pData[0], length);

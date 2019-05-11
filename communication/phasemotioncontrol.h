@@ -107,6 +107,8 @@ using namespace std;
 #define MIDDLE_POS (PULSE_COUNT_RPM * RISE_R)
 #define ZERO_POS 0
 
+#define HALF_RPM_POS (ZERO_POS + PULSE_COUNT_RPM / 2.0)
+
 #define MAX_POLE_LENGTH (MAX_MM / 2.0)
 
 #define MM_TO_PULSE_COUNT_SCALE (PULSE_COUNT_RPM / MM_RPM)
@@ -148,7 +150,6 @@ public:
 	void StopRiseDownMove();
 	void Rise();
 	void Down();
-	void Csp(double * pulse);
 	void PidCsp(double * pulse);
 	void NaviPidCsp(double * pulse);
 	void SlowPidCsp(double * pulse);

@@ -58,6 +58,7 @@ protected:
 public:
 	BOOL SetWindowPixelFormat(HDC hDC);   //�趨���ظ�ʽ 
 	BOOL CreateViewGLContext(HDC hDC);     //View GL Context 
+	void JudgeControlCommand();
 	void RenderScene();                                //���Ƴ��� 
 	void RenderSwitchStatus();
 	void FillCtlColor(CWnd* cwnd, COLORREF color);
@@ -76,6 +77,7 @@ public:
 	afx_msg void OnBnClickedBtnStart();
 	afx_msg void OnBnClickedBtnStopme();
 	afx_msg void OnBnClickedBtnDown();
+	void OnCommandStopme();
 	void EanbleButton(int isenable);
 	void KalmanFilterInit();
 	void ChartInit();

@@ -168,6 +168,7 @@
     <ClCompile Include="control\JY901.cpp" />
     <ClCompile Include="control\kalman_filter.cpp" />
     <ClCompile Include="control\pid.cpp" />
+    <ClCompile Include="control\platformapi.cpp" />
     <ClCompile Include="control\sensor.cpp" />
     <ClCompile Include="control\udp.cpp" />
     <ClCompile Include="control\water.cpp" />
@@ -244,6 +245,7 @@
     <ClInclude Include="control\JY901.h" />
     <ClInclude Include="control\kalman_filter.h" />
     <ClInclude Include="control\pid.h" />
+    <ClInclude Include="control\platformapi.h" />
     <ClInclude Include="control\sensor.h" />
     <ClInclude Include="control\udp.h" />
     <ClInclude Include="control\water.h" />

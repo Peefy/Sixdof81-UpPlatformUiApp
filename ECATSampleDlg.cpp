@@ -25,6 +25,7 @@
 #include "control/inertialnavigation.h"
 #include "control/water.h"
 #include "control/illusion.h"
+#include "control/platformapi.h"
 
 #include "ui/uiconfig.h"
 
@@ -55,7 +56,7 @@ using namespace std;
 #define TIMER_MS 10
 
 #define SIXDOF_CONTROL_DELEY 1
-#define SCENE_THREAD_DELAY 1000
+#define SCENE_THREAD_DELAY 50
 #define SENSOR_THREAD_DELAY 1000
 #define DATA_BUFFER_THREAD_DELAY 1
 
@@ -102,6 +103,8 @@ Water water;
 
 SensorInfo_t info;
 
+ApiControl apiControl;
+
 // 六自由度平台状态
 double pulse_cal[AXES_COUNT];
 double poleLength[AXES_COUNT];
@@ -139,6 +142,8 @@ double chartYawValPoint[CHART_POINT_NUM] = { 0 };
 double runTime = 0;
 double chartTime = 0;
 
+int apiCtrlComand = 0;
+
 kalman1_state kalman_rollFilter;
 kalman1_state kalman_yawFilter;
 kalman1_state kalman_pitchFilter;
@@ -147,6 +152,7 @@ kalman1_state kalman_yFilter;
 kalman1_state kalman_zFilter;
 
 mutex csdata;
+mutex ctrlCommandLockobj;
 DataPackageDouble visionData = {0};
 DataPackageDouble lastData = {0};
 
@@ -173,6 +179,12 @@ DWORD WINAPI SceneInfoThread(LPVOID pParam)
 {
 	while (true)
 	{	
+		apiControl.GatherData();
+		if (ctrlCommandLockobj.try_lock())
+		{
+			apiCtrlComand = apiControl.Data.ControlCommand;
+			ctrlCommandLockobj.unlock();
+		}
 		Sleep(SCENE_THREAD_DELAY);
 	}
 	return 0;
@@ -252,6 +264,51 @@ void OpenThread()
 void SensorRead()
 {
 
+}
+
+void CECATSampleDlg::JudgeControlCommand()
+{
+	if (ctrlCommandLockobj.try_lock())
+	{
+		switch (apiCtrlComand)
+		{
+		case API_CTL_CMD_RISE_INT32:
+			// Rise
+			if (status == SIXDOF_STATUS_BOTTOM || status == SIXDOF_STATUS_ISFALLING)
+			{
+				OnBnClickedBtnRise();
+			}
+			else if (status == SIXDOF_STATUS_MIDDLE || status == SIXDOF_STATUS_RUN)
+			{
+				OnCommandStopme();
+			}
+			break;
+		case API_CTL_CMD_DOWN_INT32:
+			// Down
+			OnBnClickedBtnDown();
+			break;
+		case API_CTL_CMD_CONNECT_INT32:
+			// Run
+			OnBnClickedBtnStart();
+			break;
+		case API_CTL_CMD_DISCONNECT_INT32:
+			// StopAndMiddle
+			OnCommandStopme();
+			break;
+		case API_CTL_CMD_PAUSE_INT32:
+			closeDataThread = true;
+			delta.ServoStop();
+			break;
+		case API_CTL_CMD_RECOVER_INT32:
+			// Run
+			OnBnClickedBtnStart();
+			break;
+		default:
+			break;
+		}
+		apiCtrlComand = 0;
+		ctrlCommandLockobj.unlock();
+	}
 }
 
 void VisionOrSensorDataDeal()
@@ -417,8 +474,7 @@ void SixdofControl()
 			double deltaroll = 0;
 			double deltayaw = 0;
 			double deltapitch = 0;
-			auto nowlength = delta.GetNowPoleLength();
-			auto nowpose = FromLengthToPose(nowlength);
+			auto nowpose = delta.GetNowPoseFromLength();
 			navigation.PidOut(&deltaroll, &deltayaw, &deltapitch);
 			auto x = RANGE(deltax, -MAX_XYZ, MAX_XYZ);
 			auto y = RANGE(deltay, -MAX_XYZ, MAX_XYZ);
@@ -426,35 +482,7 @@ void SixdofControl()
 			auto roll = RANGE(deltaroll + nowpose[3], -MAX_DEG, MAX_DEG);
 			auto pitch = RANGE(deltapitch + nowpose[4], -MAX_DEG, MAX_DEG);
 			auto yaw = RANGE(deltayaw + nowpose[5], -MAX_DEG, MAX_DEG);
-			//double* pulse_dugu = Control(x, y, z, roll + info.Roll, yaw, pitch + info.Pitch);
 			double* pulse_dugu = Control(x, y, z, roll, yaw, pitch);
-			/*
-#if IS_USE_NAVIGATION
-			navigation.PidOut(&deltaroll, &deltayaw, &deltapitch);
-			auto x = RANGE(deltax + lastData.X, -MAX_XYZ, MAX_XYZ);
-			auto y = RANGE(deltay + lastData.Y, -MAX_XYZ, MAX_XYZ);
-			auto z = RANGE(deltaz + lastData.Z, -MAX_XYZ, MAX_XYZ);
-			auto roll = RANGE(deltaroll + lastData.Roll, -MAX_DEG, MAX_DEG);
-			auto pitch = RANGE(deltapitch + lastData.Pitch, -MAX_DEG, MAX_DEG);
-			auto yaw = RANGE(deltayaw + lastData.Yaw, -MAX_DEG, MAX_DEG);
-			double* pulse_dugu = Control(x, y, z, roll + info.Roll, yaw, pitch + info.Pitch);
-#else
-			auto x = RANGE(0, -MAX_XYZ, MAX_XYZ);
-			auto y = RANGE(0, -MAX_XYZ, MAX_XYZ);
-			auto z = RANGE(0, -MAX_XYZ, MAX_XYZ);
-			auto roll = RANGE(water.Roll, -MAX_DEG, MAX_DEG);
-			auto pitch = RANGE(water.Pitch, -MAX_DEG, MAX_DEG);
-			auto yaw = RANGE(water.Yaw, -MAX_DEG, MAX_DEG);
-			double* pulse_dugu = Control(x, y, z, roll, yaw, pitch);
-#endif
-			lastData.X = x;
-			lastData.Y = y;
-			lastData.Z = z;
-			lastData.Roll = roll;
-			lastData.Pitch = pitch;
-			lastData.Yaw = yaw;
-			*/
-
 			for (auto ii = 0; ii < AXES_COUNT; ++ii)
 			{
 				pulse_cal[ii] = pulse_dugu[ii];
@@ -470,7 +498,6 @@ void SixdofControl()
 			data.Yaw = (int16_t)(yaw * 100);
 			data.Pitch = (int16_t)((pitch) * 100);
 			t += deltat;
-			//delta.PidCsp(dis);
 			delta.NaviPidCsp(dis);
 		}
 		Sleep(delay);
@@ -1094,6 +1121,7 @@ void CECATSampleDlg::OnTimer(UINT nIDEvent)
 		OnBTNInitialCard();	
 	}
 	MoveValPoint();
+	JudgeControlCommand();
 	//RenderScene();
 	//RenderSwitchStatus();
 	//ShowImage();
@@ -1266,8 +1294,28 @@ void CECATSampleDlg::OnBnClickedBtnStopme()
 	ResetDefaultData(&lastData);
 }
 
+void CECATSampleDlg::OnCommandStopme()
+{
+	if (status != SIXDOF_STATUS_RUN)
+	{
+		return;
+	}
+	status = SIXDOF_STATUS_READY;
+	closeDataThread = true;
+	Sleep(100);
+	delta.UnlockServo();
+	delta.StopRiseDownMove();
+	Sleep(100);
+	delta.MoveToZeroPulseNumber();
+	ResetDefaultData(&data);
+}
+
 void CECATSampleDlg::OnBnClickedBtnDown()
 {	
+	if (status == SIXDOF_STATUS_ISFALLING || status == SIXDOF_STATUS_BOTTOM)
+	{
+		return;
+	}
 	delta.ReadAllSwitchStatus();
 	if (delta.IsAllAtBottom() == true)
 	{

@@ -69,6 +69,12 @@ PID_Type MotionNavigationPidControler[AXES_COUNT] =
 	{ NAVI_MOTION_P, NAVI_MOTION_I, NAVI_MOTION_D, -NAVI_MAX_VEL, NAVI_MAX_VEL }
 };
 
+static double last_pulse[AXES_COUNT] = { 0, 0, 0, 0, 0, 0 };
+static double now_vel[AXES_COUNT] = { 0, 0, 0, 0, 0, 0 };
+static double last_str_vel[AXES_COUNT] = { 0, 0, 0, 0, 0, 0 };
+static double speed_scale = 100;
+static ULONG last_pulses[AXES_COUNT] = {0};
+
 PhaseMotionControl::PhaseMotionControl()
 {
 	disposed = false; 
@@ -281,25 +287,6 @@ void PhaseMotionControl::Down()
 #endif	
 }
 
-double last_pulse[AXES_COUNT] = { 0, 0, 0, 0, 0, 0 };
-double now_vel[AXES_COUNT] = { 0, 0, 0, 0, 0, 0 };
-double last_str_vel[AXES_COUNT] = { 0, 0, 0, 0, 0, 0 };
-double speed_scale = 100;
-
-void PhaseMotionControl::Csp(double * pulse)
-{	
-	for (auto i = 0; i < AXES_COUNT; ++i)
-	{
-		pulse[i] = RANGE_V(pulse[i], 0, MAX_POS);
-		auto re = (pulse[i] - last_pulse[i]) * speed_scale;
-		now_vel[i] = re;
-		now_vel[i] = RANGE_V(now_vel[i], -4, 4);
-		last_pulse[i] = pulse[i];
-		last_str_vel[i] = now_vel[i];
-	}
-	SetMotionVelocty(now_vel, AXES_COUNT);
-}
-
 void PhaseMotionControl::PidCsp(double * pulse)
 {
 	if (lockobj.try_lock())
@@ -307,7 +294,7 @@ void PhaseMotionControl::PidCsp(double * pulse)
 		for (auto i = 0; i < AXES_COUNT; ++i)
 		{
 			pulse[i] = pulse[i] + MIDDLE_POS;
-			pulse[i] = RANGE_V(pulse[i], 0, MAX_POS);
+			pulse[i] = RANGE_V(pulse[i], HALF_RPM_POS, MAX_POS - HALF_RPM_POS);
 			now_vel[i] = MyDeltaPID_Real(&MotionLocationPidControler[i], \
 				NowPluse[i], pulse[i]);
 		}
@@ -323,7 +310,7 @@ void PhaseMotionControl::NaviPidCsp(double * pulse)
 		for (auto i = 0; i < AXES_COUNT; ++i)
 		{
 			pulse[i] = pulse[i] + MIDDLE_POS;
-			pulse[i] = RANGE_V(pulse[i], 0, MAX_POS);
+			pulse[i] = RANGE_V(pulse[i], HALF_RPM_POS, MAX_POS - HALF_RPM_POS);
 			now_vel[i] = MyDeltaPID_Real(&MotionNavigationPidControler[i], \
 				NowPluse[i], pulse[i]);
 		}
@@ -411,8 +398,6 @@ double PhaseMotionControl::GetMotionAveragePulse()
 	AvrPulse = avr_pulse;
 	return avr_pulse;
 }
-
-ULONG last_pulses[AXES_COUNT] = {0};
 
 void PhaseMotionControl::RenewNowPulse()
 {
