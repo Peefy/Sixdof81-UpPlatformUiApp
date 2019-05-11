@@ -7,7 +7,7 @@
 #define JUDGE_IS_START   if(IsRS422Start == false) return;
 #define JUDGE_IS_RECIEVE if(IsRecievedData == false) return;
 
-#define IS_USE_DELTA_PID 1
+#define IS_USE_DELTA_PID 0
 
 #define FRAME_LENGTH 83
 #define DATA_NUM 21
@@ -263,7 +263,7 @@ void InertialNavigation::DecodeData()
 	//1度等于60分，1分等于60秒
 	Pitch = -data.Roll * ANGLE_SCALE / 3600.0;
 	Roll = -data.Pitch * ANGLE_SCALE / 3600.0;
-	Yaw = data.Yaw * ANGLE_SCALE / 3600.0;
+	Yaw = data.Yaw * ANGLE_SCALE / 3600.0 - YawOffset;
 	Lon = data.Longitude * LATLON_SCALE / 3600.0;
 	Lan = data.Latitude * LATLON_SCALE / 3600.0;
 	IsGyroError = STATUS_BIT_GET(data.StateByte, GYRO_ERR_BIT);
@@ -286,6 +286,7 @@ void InertialNavigation::DataInit()
 	Roll = 0;
 	Yaw = 0;
 	Pitch = 0;
+	YawOffset = 0;
 	IsRecievedData = false;
 	IsGyroError = false;
 	IsAccError = false;
@@ -295,6 +296,11 @@ void InertialNavigation::DataInit()
 	IsInertialError = false;
 	IsNavigationError = false;
 	IsRS422Start = false;
+}
+
+void InertialNavigation::JudgeYawOffset()
+{
+	YawOffset = data.Yaw * ANGLE_SCALE / 3600.0;
 }
 
 void InertialNavigation::PidInit()
@@ -315,8 +321,9 @@ void InertialNavigation::PidOut(double* roll, double *yaw, double* pitch)
 	*roll = MyDeltaPID_Real(&rollPid, Roll, finalRoll);
 	//*yaw = MyDeltaPID_Real(&yawPid, Yaw, finalYaw);
 #else
-	*roll = Roll;
-	*pitch = Pitch
+	*roll = finalRoll - Roll;
+	*pitch = finalPitch - Pitch;
+	*yaw = finalYaw + Yaw;
 #endif
 }
 

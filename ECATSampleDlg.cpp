@@ -417,6 +417,18 @@ void SixdofControl()
 			double deltaroll = 0;
 			double deltayaw = 0;
 			double deltapitch = 0;
+			auto nowlength = delta.GetNowPoleLength();
+			auto nowpose = FromLengthToPose(nowlength);
+			navigation.PidOut(&deltaroll, &deltayaw, &deltapitch);
+			auto x = RANGE(deltax, -MAX_XYZ, MAX_XYZ);
+			auto y = RANGE(deltay, -MAX_XYZ, MAX_XYZ);
+			auto z = RANGE(deltaz, -MAX_XYZ, MAX_XYZ);
+			auto roll = RANGE(deltaroll + nowpose[3], -MAX_DEG, MAX_DEG);
+			auto pitch = RANGE(deltapitch + nowpose[4], -MAX_DEG, MAX_DEG);
+			auto yaw = RANGE(deltayaw + nowpose[5], -MAX_DEG, MAX_DEG);
+			//double* pulse_dugu = Control(x, y, z, roll + info.Roll, yaw, pitch + info.Pitch);
+			double* pulse_dugu = Control(x, y, z, roll, yaw, pitch);
+			/*
 #if IS_USE_NAVIGATION
 			navigation.PidOut(&deltaroll, &deltayaw, &deltapitch);
 			auto x = RANGE(deltax + lastData.X, -MAX_XYZ, MAX_XYZ);
@@ -441,6 +453,8 @@ void SixdofControl()
 			lastData.Roll = roll;
 			lastData.Pitch = pitch;
 			lastData.Yaw = yaw;
+			*/
+
 			for (auto ii = 0; ii < AXES_COUNT; ++ii)
 			{
 				pulse_cal[ii] = pulse_dugu[ii];
@@ -452,11 +466,12 @@ void SixdofControl()
 			data.X = (int16_t)(x * 10);
 			data.Y = (int16_t)(y * 10);
 			data.Z = (int16_t)(z * 10);
-			data.Roll = (int16_t)((roll + info.Roll) * 100);
+			data.Roll = (int16_t)((roll) * 100);
 			data.Yaw = (int16_t)(yaw * 100);
-			data.Pitch = (int16_t)((pitch + info.Pitch) * 100);
+			data.Pitch = (int16_t)((pitch) * 100);
 			t += deltat;
-			delta.PidCsp(dis);
+			//delta.PidCsp(dis);
+			delta.NaviPidCsp(dis);
 		}
 		Sleep(delay);
 	}
@@ -1093,7 +1108,7 @@ void CECATSampleDlg::OnTimer(UINT nIDEvent)
 	
 	if (csdata.try_lock())
 	{
-		statusStr.Format(_T("1:%.2f 2:%.2f 3:%.2f 4:%.4f 5:%.4f 6:%.4f"),
+		statusStr.Format(_T("1:%.2f 2:%.2f 3:%.2f 4:%.2f 5:%.2f 6:%.2f"),
 			visionData.X, visionData.Y, visionData.Z,
 			visionData.Roll, visionData.Pitch, visionData.Yaw);
 		csdata.unlock();
@@ -1212,6 +1227,7 @@ void CECATSampleDlg::OnBnClickedBtnStart()
 		return;
 	}
 	status = SIXDOF_STATUS_RUN;
+	navigation.JudgeYawOffset();
 	delta.ServoStop();
 	Sleep(100);
 	delta.RenewNowPulse();

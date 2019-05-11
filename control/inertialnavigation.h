@@ -111,6 +111,8 @@ using namespace std;
 #define CHECK_BYTE_CAL_START_INDEX  2
 #define CHECK_BYTE_CAL_END_INDEX  79
 
+#define YAW_OFFSET 305.686
+
 #pragma pack (1)
 typedef struct
 {
@@ -175,6 +177,7 @@ public:
 	bool Close();
 	bool GatherData();
 	int GetBufferLength();
+	void JudgeYawOffset();
 	void SetDefaultAlignment(double lat, double lon, double height);
 	void SetGpsPoleLength(double x, double y, double z);
 	void SetAngleError(double pitch, double roll, double yaw);
@@ -193,6 +196,7 @@ public:
 	double Pitch;
 	double Lon;
 	double Lan;
+	double YawOffset;
 	bool IsRecievedData;
 	bool IsGyroError;
 	bool IsAccError;

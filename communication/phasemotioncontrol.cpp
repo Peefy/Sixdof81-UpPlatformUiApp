@@ -32,6 +32,11 @@
 #define RISE_MOTION_I 0.0000002
 #define RISE_MOTION_D 0.0
 #define RISE_MAX_VEL  0.75
+
+#define NAVI_MOTION_P 0.001
+#define NAVI_MOTION_I 0.00018
+#define NAVI_MOTION_D 0.00008
+#define NAVI_MAX_VEL  8.0
 #endif 
 
 PID_Type MotionLocationPidControler[AXES_COUNT] = 
@@ -52,6 +57,16 @@ PID_Type MotionRisePidControler[AXES_COUNT] =
 	{ RISE_MOTION_P, RISE_MOTION_I, RISE_MOTION_D, -RISE_MAX_VEL, RISE_MAX_VEL },
 	{ RISE_MOTION_P, RISE_MOTION_I, RISE_MOTION_D, -RISE_MAX_VEL, RISE_MAX_VEL },
 	{ RISE_MOTION_P, RISE_MOTION_I, RISE_MOTION_D, -RISE_MAX_VEL, RISE_MAX_VEL }
+};
+
+PID_Type MotionNavigationPidControler[AXES_COUNT] = 
+{
+	{ NAVI_MOTION_P, NAVI_MOTION_I, NAVI_MOTION_D, -NAVI_MAX_VEL, NAVI_MAX_VEL },
+	{ NAVI_MOTION_P, NAVI_MOTION_I, NAVI_MOTION_D, -NAVI_MAX_VEL, NAVI_MAX_VEL },
+	{ NAVI_MOTION_P, NAVI_MOTION_I, NAVI_MOTION_D, -NAVI_MAX_VEL, NAVI_MAX_VEL },
+	{ NAVI_MOTION_P, NAVI_MOTION_I, NAVI_MOTION_D, -NAVI_MAX_VEL, NAVI_MAX_VEL },
+	{ NAVI_MOTION_P, NAVI_MOTION_I, NAVI_MOTION_D, -NAVI_MAX_VEL, NAVI_MAX_VEL },
+	{ NAVI_MOTION_P, NAVI_MOTION_I, NAVI_MOTION_D, -NAVI_MAX_VEL, NAVI_MAX_VEL }
 };
 
 PhaseMotionControl::PhaseMotionControl()
@@ -301,6 +316,22 @@ void PhaseMotionControl::PidCsp(double * pulse)
 	SetMotionVelocty(now_vel, AXES_COUNT);
 }
 
+void PhaseMotionControl::NaviPidCsp(double * pulse)
+{
+	if (lockobj.try_lock())
+	{	
+		for (auto i = 0; i < AXES_COUNT; ++i)
+		{
+			pulse[i] = pulse[i] + MIDDLE_POS;
+			pulse[i] = RANGE_V(pulse[i], 0, MAX_POS);
+			now_vel[i] = MyDeltaPID_Real(&MotionNavigationPidControler[i], \
+				NowPluse[i], pulse[i]);
+		}
+		lockobj.unlock();
+	}
+	SetMotionVelocty(now_vel, AXES_COUNT);
+}
+
 void PhaseMotionControl::SlowPidCsp(double * pulse)
 {
 	if (lockobj.try_lock())
@@ -486,6 +517,7 @@ void PhaseMotionControl::PidControllerInit()
 	for (int i = 0;i < AXES_COUNT;++i)
 	{
 		MyPidParaInit(&MotionLocationPidControler[i]);
+		MyPidParaInit(&MotionNavigationPidControler[i]);
 	}
 }
 

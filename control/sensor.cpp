@@ -85,6 +85,7 @@ SensorInfo_t Sensor::GatherData()
 	static UCHAR chData[READBUFFER + 102400] = {0};
 	static UCHAR *pch = chData;
 	static struct SAngle angle;
+	static struct SGyro gyro;
 	int i;
 	UCHAR chReadData[READBUFFER] = {0};
 	unsigned int uiReceived = (int)serialPort.GetCOMData(chReadData);
@@ -94,7 +95,7 @@ SensorInfo_t Sensor::GatherData()
 	}
 	memcpy(pch, chReadData, uiReceived);    //将数据置于chData[]中
 	i = 0;
-	int j = uiRemainLength + uiReceived - 44;
+	int j = uiRemainLength + uiReceived - 11;
 	while(i <= j)
 	{
 		UCHAR *pData = &chData[i];
@@ -108,7 +109,18 @@ SensorInfo_t Sensor::GatherData()
 			info.Roll = readInfo.Roll - offsetinfo.Roll;
 			info.Pitch = readInfo.Pitch - offsetinfo.Pitch;
 			info.Yaw = readInfo.Yaw - offsetinfo.Yaw;
-			i += 44;		
+			i += 11;		
+			continue;
+		}
+		if((pData[0] == 0x55) && (pData[1] == 0x53))
+		{       	
+			ulFrameNum++;
+			memcpy(&angle, &pData[2], 8);
+			for (int i = 0;i < 3;++i)
+			{
+				info.Gyro[i] = gyro.w[i] / SENSOR_MAX_AD_VAL * MPU6050_MAX_GYRO;
+			}
+			i += 11;		
 			continue;
 		}
 		else

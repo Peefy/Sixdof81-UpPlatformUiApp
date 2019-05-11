@@ -150,6 +150,7 @@ public:
 	void Down();
 	void Csp(double * pulse);
 	void PidCsp(double * pulse);
+	void NaviPidCsp(double * pulse);
 	void SlowPidCsp(double * pulse);
 	double GetMotionAveragePulse();
 	double* GetMotionNowEncoderVelocity();
