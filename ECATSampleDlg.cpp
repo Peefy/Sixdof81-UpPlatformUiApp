@@ -155,6 +155,7 @@ mutex csdata;
 mutex ctrlCommandLockobj;
 DataPackageDouble visionData = {0};
 DataPackageDouble lastData = {0};
+DataPackageDouble naviFinalData = {0};
 
 DWORD WINAPI DataTransThread(LPVOID pParam)
 {
@@ -479,8 +480,8 @@ void SixdofControl()
 			auto x = RANGE(deltax, -MAX_XYZ, MAX_XYZ);
 			auto y = RANGE(deltay, -MAX_XYZ, MAX_XYZ);
 			auto z = RANGE(deltaz, -MAX_XYZ, MAX_XYZ);
-			auto roll = RANGE(deltaroll + nowpose[3], -MAX_DEG, MAX_DEG);
-			auto pitch = RANGE(deltapitch + nowpose[4], -MAX_DEG, MAX_DEG);
+			auto roll = RANGE(naviFinalData.Roll + deltaroll + nowpose[3], -MAX_DEG, MAX_DEG);
+			auto pitch = RANGE(naviFinalData.Pitch + deltapitch + nowpose[4], -MAX_DEG, MAX_DEG);
 			auto yaw = RANGE(deltayaw + nowpose[5], -MAX_DEG, MAX_DEG);
 			double* pulse_dugu = Control(x, y, z, roll, yaw, pitch);
 			for (auto ii = 0; ii < AXES_COUNT; ++ii)
@@ -1263,6 +1264,8 @@ void CECATSampleDlg::OnBnClickedBtnStart()
 	delta.UnlockServo();
 	delta.PidControllerInit();
 	navigation.PidInit();
+	naviFinalData.Roll = RANGE(GetCEditNumber(IDC_EDIT_ROLL_ZERO_POS), -MAX_DEG_ZERO_POS, MAX_DEG_ZERO_POS);
+	naviFinalData.Yaw = RANGE(GetCEditNumber(IDC_EDIT_PITCH_ZERO_POS), -MAX_DEG_ZERO_POS, MAX_DEG_ZERO_POS);
 	// 正常使用模式
 	isTest = false;
 	isCosMode = false;

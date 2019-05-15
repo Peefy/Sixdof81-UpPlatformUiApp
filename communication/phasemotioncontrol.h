@@ -98,8 +98,8 @@ using namespace std;
 #define MAX_DEG_ROLL   10
 #define MAX_DEG_YAW    10
 
-#define MAX_XYZ_ZERO_POS    10
-#define MAX_DEG_ZERO_POS    3
+#define MAX_XYZ_ZERO_POS    (MAX_XYZ_X)
+#define MAX_DEG_ZERO_POS    (MAX_DEG_PITCH)
 
 #endif
 
