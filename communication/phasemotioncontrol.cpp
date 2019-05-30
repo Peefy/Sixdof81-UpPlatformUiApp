@@ -654,3 +654,22 @@ void PhaseMotionControl::Test()
 	sixdofDioAndCount.Test();
 #endif
 }
+
+void PhaseMotionControl::PowerStart(bool isStart)
+{
+#if IS_BIG_MOTION
+
+#else
+	sixdofDioAndCount.Start(isStart);
+#endif
+
+}
+
+void PhaseMotionControl::PowerCheckStart(bool isStart)
+{
+#if IS_BIG_MOTION
+
+#else
+	sixdofDioAndCount.CheckStart(isStart);
+#endif
+}

@@ -134,6 +134,11 @@
 #define IDC_EDIT_PITCH_ZERO_POS         1096
 #define IDC_EDIT_YAW_PHASE2             1097
 #define IDC_EDIT_YAW_ZERO_POS           1097
+#define IDC_BTN_POWER_ON                1098
+#define IDC_BTN_POWER_OFF               1099
+#define IDC_BTN_CHECK_ON                1100
+#define IDC_BTN_POWER_OFF2              1101
+#define IDC_BTN_CHECK_OFF               1101
 
 // Next default values for new objects
 // 

@@ -172,6 +172,8 @@ public:
 	bool CheckStatus(SixDofPlatformStatus& status);
 	bool PowerOnSelfTest(SixDofPlatformStatus laststatus, double * lastpulse);
 	void Test();
+	void PowerStart(bool isStart);
+	void PowerCheckStart(bool isStart);
 private:
 	bool isrising;
 	bool isfalling;

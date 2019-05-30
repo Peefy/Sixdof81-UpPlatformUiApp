@@ -12,6 +12,11 @@
 #define IDC_BTN_CONNECT_SHOW_TEXT      "所有缸上"
 #define IDC_BTN_DISCONNECT_SHOW_TEXT   "所有缸下"
 
+#define IDC_BTN_POWER_ON_SHOW_TEXT       "电源开"
+#define IDC_BTN_POWER_OFF_SHOW_TEXT      "电源关"
+#define IDC_BTN_CHECK_ON_SHOW_TEXT       "检修开"
+#define IDC_BTN_CHECK_OFF_SHOW_TEXT      "检修关"
+
 #define IDC_STATIC_POSE_SHOW_TEXT      "姿态"
 #define IDC_STATIC_LENGTH_SHOW_TEXT    "缸长"
 #define IDC_STATIC_SENSOR_SHOW_TEXT    "传感器"

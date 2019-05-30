@@ -113,6 +113,7 @@ bool Water::GatherData()
 			Roll = downData.Roll / WATER_ANGLE_SCALE;
 			Pitch = downData.Pitch / WATER_ANGLE_SCALE;
 			Yaw = downData.Yaw / WATER_ANGLE_SCALE;
+			ControlCommand = static_cast<WaterControlCommandInt8>(downData.Control);
 			IsRecievedData = true;
 			i += length;		
 			continue;

@@ -25,7 +25,7 @@
 #include "control/inertialnavigation.h"
 #include "control/water.h"
 #include "control/illusion.h"
-#include "control/platformapi.h"
+//#include "control/platformapi.h"
 
 #include "ui/uiconfig.h"
 
@@ -98,13 +98,12 @@ InertialNavigation navigation;
 Sensor sensor;
 #else
 // 下平台通信接口
-Water water;
 #endif
 
 SensorInfo_t info;
 
-ApiControl apiControl;
-
+//ApiControl apiControl;
+Water water;
 // 六自由度平台状态
 double pulse_cal[AXES_COUNT];
 double poleLength[AXES_COUNT];
@@ -142,7 +141,7 @@ double chartYawValPoint[CHART_POINT_NUM] = { 0 };
 double runTime = 0;
 double chartTime = 0;
 
-ApiControlCommandInt32 apiCtrlComand = ApiControlCommandInt32::API_CTL_CMD_NONE;
+WaterControlCommandInt8 apiCtrlComand = WaterControlCommandInt8::WATER_CTL_CMD_NONE_INT8;
 
 kalman1_state kalman_rollFilter;
 kalman1_state kalman_yawFilter;
@@ -156,6 +155,7 @@ mutex ctrlCommandLockobj;
 DataPackageDouble visionData = {0};
 DataPackageDouble lastData = {0};
 DataPackageDouble naviFinalData = {0};
+DataPackageDouble naviWaterFinalData = {0};
 
 DWORD WINAPI DataTransThread(LPVOID pParam)
 {
@@ -180,12 +180,16 @@ DWORD WINAPI SceneInfoThread(LPVOID pParam)
 {
 	while (true)
 	{	
-		apiControl.GatherData();
+		water.GatherData();
 		if (ctrlCommandLockobj.try_lock())
 		{
-			apiCtrlComand = apiControl.ControlCommand;
+			apiCtrlComand = water.ControlCommand;
+			naviWaterFinalData.Roll = water.Roll;
+			naviWaterFinalData.Pitch = water.Pitch;
+			naviWaterFinalData.Yaw = water.Yaw;
 			ctrlCommandLockobj.unlock();
 		}
+		water.SendData(data.Roll / 100.0, data.Yaw / 100.0, data.Pitch / 100.0);
 		Sleep(SCENE_THREAD_DELAY);
 	}
 	return 0;
@@ -273,7 +277,7 @@ void CECATSampleDlg::JudgeControlCommand()
 	{
 		switch (apiCtrlComand)
 		{
-		case ApiControlCommandInt32::API_CTL_CMD_RISE_INT32:
+		case WaterControlCommandInt8::WATER_CTL_CMD_RISE_INT8:
 			// Rise
 			if (status == SIXDOF_STATUS_BOTTOM || status == SIXDOF_STATUS_ISFALLING)
 			{
@@ -284,30 +288,38 @@ void CECATSampleDlg::JudgeControlCommand()
 				OnCommandStopme();
 			}
 			break;
-		case ApiControlCommandInt32::API_CTL_CMD_DOWN_INT32:
+		case WaterControlCommandInt8::WATER_CTL_CMD_DOWN_INT8:
 			// Down
 			OnBnClickedBtnDown();
 			break;
-		case ApiControlCommandInt32::API_CTL_CMD_CONNECT_INT32:
+		case WaterControlCommandInt8::WATER_CTL_CMD_CONNECT_INT8:
 			// Run
 			OnBnClickedBtnStart();
 			break;
-		case ApiControlCommandInt32::API_CTL_CMD_DISCONNECT_INT32:
+		case WaterControlCommandInt8::WATER_CTL_CMD_DISCONNECT_INT8:
 			// StopAndMiddle
 			OnCommandStopme();
 			break;
-		case ApiControlCommandInt32::API_CTL_CMD_PAUSE_INT32:
+		case WaterControlCommandInt8::WATER_CTL_CMD_PAUSE_INT8:
 			closeDataThread = true;
 			delta.ServoStop();
 			break;
-		case ApiControlCommandInt32::API_CTL_CMD_RECOVER_INT32:
+		case WaterControlCommandInt8::WATER_CTL_CMD_RECOVER_INT8:
 			// Run
 			OnBnClickedBtnStart();
+			break;
+		case WaterControlCommandInt8::WATER_CTL_POWER_ON_INT8:
+			// Power On
+			OnBnClickedBtnPowerOn();
+			break;
+		case WaterControlCommandInt8::WATER_CTL_POWER_OFF_INT8:
+			// Power Off
+			OnBnClickedBtnPowerOff();
 			break;
 		default:
 			break;
 		}
-		apiCtrlComand = ApiControlCommandInt32::API_CTL_CMD_NONE;
+		apiCtrlComand = WaterControlCommandInt8::WATER_CTL_CMD_NONE_INT8;
 		ctrlCommandLockobj.unlock();
 	}
 }
@@ -480,9 +492,9 @@ void SixdofControl()
 			auto x = RANGE(deltax, -MAX_XYZ, MAX_XYZ);
 			auto y = RANGE(deltay, -MAX_XYZ, MAX_XYZ);
 			auto z = RANGE(deltaz, -MAX_XYZ, MAX_XYZ);
-			auto roll = RANGE(naviFinalData.Roll + deltaroll + nowpose[3], -MAX_DEG, MAX_DEG);
-			auto pitch = RANGE(naviFinalData.Pitch + deltapitch + nowpose[4], -MAX_DEG, MAX_DEG);
-			auto yaw = RANGE(deltayaw + nowpose[5], -MAX_DEG, MAX_DEG);
+			auto roll = RANGE(naviFinalData.Roll + naviWaterFinalData.Roll + deltaroll + nowpose[3], -MAX_DEG, MAX_DEG);
+			auto pitch = RANGE(naviFinalData.Pitch + naviWaterFinalData.Pitch + deltapitch + nowpose[4], -MAX_DEG, MAX_DEG);
+			auto yaw = RANGE(naviFinalData.Yaw + naviWaterFinalData.Yaw + deltayaw + nowpose[5], -MAX_DEG, MAX_DEG);
 			double* pulse_dugu = Control(x, y, z, roll, yaw, pitch);
 			for (auto ii = 0; ii < AXES_COUNT; ++ii)
 			{
@@ -590,6 +602,10 @@ BEGIN_MESSAGE_MAP(CECATSampleDlg, CDialog)
 	ON_BN_CLICKED(IDC_BUTTON_EXIT, &CECATSampleDlg::OnBnClickedButtonExit)
 	ON_BN_CLICKED(IDC_BUTTON_TEST3, &CECATSampleDlg::OnBnClickedButtonTest3)
 	ON_BN_CLICKED(IDC_BUTTON_STOP_TEST, &CECATSampleDlg::OnBnClickedButtonStopTest)
+	ON_BN_CLICKED(IDC_BTN_POWER_ON, &CECATSampleDlg::OnBnClickedBtnPowerOn)
+	ON_BN_CLICKED(IDC_BTN_POWER_OFF, &CECATSampleDlg::OnBnClickedBtnPowerOff)
+	ON_BN_CLICKED(IDC_BTN_CHECK_ON, &CECATSampleDlg::OnBnClickedBtnCheckOn)
+	ON_BN_CLICKED(IDC_BTN_CHECK_OFF, &CECATSampleDlg::OnBnClickedBtnCheckOff)
 END_MESSAGE_MAP()
 
 void CECATSampleDlg::KalmanFilterInit()
@@ -729,6 +745,11 @@ void CECATSampleDlg::AppInit()
 	GetDlgItem(IDC_BTN_CONNECT)->SetWindowTextW(_T(IDC_BTN_CONNECT_SHOW_TEXT));
 	GetDlgItem(IDC_BTN_DISCONNECT)->SetWindowTextW(_T(IDC_BTN_DISCONNECT_SHOW_TEXT));
 
+	GetDlgItem(IDC_BTN_POWER_ON)->SetWindowTextW(_T(IDC_BTN_POWER_ON_SHOW_TEXT));
+	GetDlgItem(IDC_BTN_POWER_OFF)->SetWindowTextW(_T(IDC_BTN_POWER_OFF_SHOW_TEXT));
+	GetDlgItem(IDC_BTN_CHECK_ON)->SetWindowTextW(_T(IDC_BTN_CHECK_ON_SHOW_TEXT));
+	GetDlgItem(IDC_BTN_CHECK_OFF)->SetWindowTextW(_T(IDC_BTN_CHECK_OFF_SHOW_TEXT));
+
 	GetDlgItem(IDC_STATIC_POSE)->SetWindowTextW(_T(IDC_STATIC_POSE_SHOW_TEXT));
 	GetDlgItem(IDC_STATIC_LENGTH)->SetWindowTextW(_T(IDC_STATIC_LENGTH_SHOW_TEXT));
 	GetDlgItem(IDC_STATIC_SENSOR)->SetWindowTextW(_T(IDC_STATIC_SENSOR_SHOW_TEXT));
@@ -792,8 +813,9 @@ void CECATSampleDlg::AppInit()
 		MessageBox(L"惯导串口打开失败");
 	}
 #else
-	water.Open();
+	
 #endif
+	water.Open();
 }
 
 double CECATSampleDlg::GetCEditNumber(int cEditId)
@@ -1265,7 +1287,8 @@ void CECATSampleDlg::OnBnClickedBtnStart()
 	delta.PidControllerInit();
 	navigation.PidInit();
 	naviFinalData.Roll = RANGE(GetCEditNumber(IDC_EDIT_ROLL_ZERO_POS), -MAX_DEG_ZERO_POS, MAX_DEG_ZERO_POS);
-	naviFinalData.Yaw = RANGE(GetCEditNumber(IDC_EDIT_PITCH_ZERO_POS), -MAX_DEG_ZERO_POS, MAX_DEG_ZERO_POS);
+	naviFinalData.Pitch = RANGE(GetCEditNumber(IDC_EDIT_PITCH_ZERO_POS), -MAX_DEG_ZERO_POS, MAX_DEG_ZERO_POS);
+	naviFinalData.Yaw = RANGE(GetCEditNumber(IDC_EDIT_YAW_ZERO_POS), -MAX_DEG_ZERO_POS, MAX_DEG_ZERO_POS);
 	// 正常使用模式
 	isTest = false;
 	isCosMode = false;
@@ -1481,3 +1504,25 @@ void CECATSampleDlg::OnBnClickedButtonStopTest()
 	OnBnClickedBtnStopme();
 }
 
+void CECATSampleDlg::OnBnClickedBtnPowerOn()
+{
+	delta.PowerStart(true);
+}
+
+
+void CECATSampleDlg::OnBnClickedBtnPowerOff()
+{
+	delta.PowerStart(false);
+}
+
+
+void CECATSampleDlg::OnBnClickedBtnCheckOn()
+{
+	delta.PowerCheckStart(true);
+}
+
+
+void CECATSampleDlg::OnBnClickedBtnCheckOff()
+{
+	delta.PowerCheckStart(false);
+}

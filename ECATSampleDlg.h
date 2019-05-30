@@ -103,6 +103,10 @@ public:
 	afx_msg void OnBnClickedButtonMode5();
 	afx_msg void OnBnClickedButtonMode6();
 	afx_msg void OnBnClickedButtonMode7();
+	afx_msg void OnBnClickedBtnPowerOn();
+	afx_msg void OnBnClickedBtnPowerOff();
+	afx_msg void OnBnClickedBtnCheckOn();
+	afx_msg void OnBnClickedBtnCheckOff();
 };
 
 //{{AFX_INSERT_LOCATION}}
