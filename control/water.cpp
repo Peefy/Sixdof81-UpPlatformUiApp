@@ -140,7 +140,7 @@ void Water::TestSendData()
 	upData.TailOne = PACKAGE_TAIL1;
 	upData.TailTwo = PACKAGE_TAIL2;
 	upData.Yaw = 11000;
-	upData.Length = UP_DATA_LENGTH ;
+	upData.Length = UP_DATA_LENGTH;
 	upData.FrameNumber++;
 	upData.Kind = 0x01;
 	upData.State = 0x02;
@@ -151,13 +151,12 @@ void Water::TestSendData()
 		chrTemp[CRC_UP_INDEX] ^= chrTemp[i];
 	}
 	serialPort.WriteData(chrTemp, length);
-	//SendUARTMessageLength(WATER_SERIAL_NUM, chrTemp, length);
 }
 
 void Water::SendData(double roll, double yaw, double pitch)
 {
+	static unsigned char chrTemp[BUFFER_MAX] = {0};
 	size_t sendSize = sizeof(char) * UpPackageLength;
-	unsigned char* chrTemp = (unsigned char*)malloc(sendSize);
 	memset(chrTemp, 0, sendSize);
 	WaterUpDataPackage data;
 	data.HeadOne = PACKAGE_HEADER1;
@@ -172,12 +171,10 @@ void Water::SendData(double roll, double yaw, double pitch)
 	data.Yaw = (uint32_t)(yaw * WATER_ANGLE_SCALE);
 	data.Roll = (uint32_t)(roll * WATER_ANGLE_SCALE);
 	data.Pitch = (uint32_t)(pitch * WATER_ANGLE_SCALE);
-	memcpy(&chrTemp[0], &upData, UpPackageLength); 
+	memcpy(&chrTemp[0], &data, UpPackageLength); 
 	for (int i = 0;i < CRC_UP_INDEX - 1;++i)
 	{
 		chrTemp[CRC_UP_INDEX] ^= chrTemp[i];
 	}
 	serialPort.WriteData(chrTemp, UpPackageLength);
-	//SendUARTMessageLength(WATER_SERIAL_NUM, chrTemp, UpPackageLength);
-	delete chrTemp;
 }
