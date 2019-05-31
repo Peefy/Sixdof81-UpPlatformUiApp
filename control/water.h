@@ -32,10 +32,10 @@ enum class WaterControlCommandInt8
 	WATER_CTL_CMD_RISE_INT8       =  2,  //串口API控制指令：上升
 	WATER_CTL_CMD_DOWN_INT8       =  3,  //串口API控制指令：下降
 	WATER_CTL_CMD_CONNECT_INT8    =  6,  //串口API控制指令：连接
-	WATER_CTL_CMD_DISCONNECT_INT8 =  7,  //串口API控制指令：断开
+	WATER_CTL_CMD_DISCONNECT_INT8 =  7,  //串口控制指令：断开
 	WATER_CTL_CMD_PAUSE_INT8      =  8,  //串口API控制指令：暂停
 	WATER_CTL_CMD_RECOVER_INT8    =  9,   //串口API控制指令：暂停恢复
-	WATER_CTL_CMD_NONE_INT8       =  155,    //串口API控制指令：空
+	WATER_CTL_CMD_NONE_INT8       =  100,    //串口API控制指令：空
 };
 
 #pragma pack (1)

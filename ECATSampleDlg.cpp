@@ -316,6 +316,8 @@ void CECATSampleDlg::JudgeControlCommand()
 			// Power Off
 			OnBnClickedBtnPowerOff();
 			break;
+		case WaterControlCommandInt8::WATER_CTL_CMD_NONE_INT8:
+			break;
 		default:
 			break;
 		}
@@ -1234,12 +1236,12 @@ void CECATSampleDlg::OnBnClickedBtnRise()
 	// 所有开关触碰到了才能上升
 	if (delta.IsAllAtBottom() == false)
 	{
-		MessageBox(_T(SIXDOF_NOT_BOTTOM_AND_RISE_MESSAGE));
+		//MessageBox(_T(SIXDOF_NOT_BOTTOM_AND_RISE_MESSAGE));
 		return;
 	}	
 	if (status != SIXDOF_STATUS_BOTTOM)
 	{
-		MessageBox(_T(SIXDOF_NOT_BOTTOM_MESSAGE));
+		//MessageBox(_T(SIXDOF_NOT_BOTTOM_MESSAGE));
 		return;
 	}
 	delta.ResetStatus();
@@ -1254,7 +1256,7 @@ void CECATSampleDlg::OnBnClickedBtnMiddle()
 	{
 		if (status != SIXDOF_STATUS_READY)
 		{
-			MessageBox(_T(SIXDOF_NOT_MIDDLE_MESSAGE));
+			//MessageBox(_T(SIXDOF_NOT_MIDDLE_MESSAGE));
 			return;
 		}
 	}
@@ -1262,7 +1264,7 @@ void CECATSampleDlg::OnBnClickedBtnMiddle()
 	{
 		if (status != SIXDOF_STATUS_MIDDLE)
 		{
-			MessageBox(_T(SIXDOF_NOT_MIDDLE_MESSAGE));
+			//MessageBox(_T(SIXDOF_NOT_MIDDLE_MESSAGE));
 			return;
 		}
 	}
@@ -1274,7 +1276,7 @@ void CECATSampleDlg::OnBnClickedBtnStart()
 {
 	if (status != SIXDOF_STATUS_READY)
 	{
-	    MessageBox(_T(SIXDOF_NOT_BEGIN_MESSAGE));
+	    //MessageBox(_T(SIXDOF_NOT_BEGIN_MESSAGE));
 		return;
 	}
 	status = SIXDOF_STATUS_RUN;
@@ -1398,7 +1400,7 @@ void CECATSampleDlg::OnBnClickedButtonTest()
 {
 	if (status != SIXDOF_STATUS_READY)
 	{
-		MessageBox(_T(SIXDOF_NOT_BEGIN_MESSAGE));
+		//MessageBox(_T(SIXDOF_NOT_BEGIN_MESSAGE));
 		return;
 	}
 	status = SIXDOF_STATUS_RUN;
