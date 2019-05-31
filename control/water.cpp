@@ -168,9 +168,12 @@ void Water::SendData(double roll, double yaw, double pitch)
 	data.InitState = 0x02;
 	data.FrameNumber = frameNumber++;
 	data.Length = UP_DATA_LENGTH;
-	data.Yaw = (uint32_t)(yaw * WATER_ANGLE_SCALE);
-	data.Roll = (uint32_t)(roll * WATER_ANGLE_SCALE);
-	data.Pitch = (uint32_t)(pitch * WATER_ANGLE_SCALE);
+	data.Yaw = (uint32_t)yaw;
+	data.Roll = (uint32_t)roll;
+	data.Pitch = (uint32_t)pitch;
+	//data.Yaw = (uint32_t)(yaw * WATER_ANGLE_SCALE);
+	//data.Roll = (uint32_t)(roll * WATER_ANGLE_SCALE);
+	//data.Pitch = (uint32_t)(pitch * WATER_ANGLE_SCALE);
 	memcpy(&chrTemp[0], &data, UpPackageLength); 
 	for (int i = 0;i < CRC_UP_INDEX - 1;++i)
 	{

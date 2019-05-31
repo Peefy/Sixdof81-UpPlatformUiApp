@@ -56,6 +56,7 @@ namespace config {
 	string ParseStringJsonFromFile(const char* filename, const char* key);
 	int ParseIntJsonFromFile(const char* filename, const char* key);
 	double ParseDoubleJsonFromFile(const char* filename, const char* key);
+	void RecordData(const char * filename, double roll, double pitch, double yaw);
 }
 
 #endif // !__INI_HELPER_H_

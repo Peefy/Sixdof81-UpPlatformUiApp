@@ -12,6 +12,8 @@
 #define FRAME_LENGTH 83
 #define DATA_NUM 21
 
+char filename[100] = "";
+
 static double p = 0.001;
 static double i = 0.0001;
 static double d = 0.000001;
@@ -264,6 +266,9 @@ void InertialNavigation::DecodeData()
 	Pitch = -data.Roll * ANGLE_SCALE / 3600.0;
 	Roll = -data.Pitch * ANGLE_SCALE / 3600.0;
 	Yaw = data.Yaw * ANGLE_SCALE / 3600.0 - YawOffset;
+	NaviRoll = data.Roll;
+	NaviPitch = data.Pitch;
+	NaviYaw = data.Yaw;
 	Lon = data.Longitude * LATLON_SCALE / 3600.0;
 	Lan = data.Latitude * LATLON_SCALE / 3600.0;
 	IsGyroError = STATUS_BIT_GET(data.StateByte, GYRO_ERR_BIT);
@@ -273,6 +278,9 @@ void InertialNavigation::DecodeData()
 	IsAlignment = STATUS_BIT_GET(data.StateByte, ALIGNMENT_BIT);
 	IsInertialError = STATUS_BIT_GET(data.StateByte, INERTIAL_ERR_BIT);
 	IsNavigationError = STATUS_BIT_GET(data.StateByte, NAVIGATION_ERR_BIT);
+
+	config::RecordData(filename, NaviRoll, NaviPitch, NaviYaw);
+
 }
 
 void InertialNavigation::DataInit()
@@ -296,6 +304,12 @@ void InertialNavigation::DataInit()
 	IsInertialError = false;
 	IsNavigationError = false;
 	IsRS422Start = false;
+
+	time_t currtime = time(NULL);
+	struct tm* p = gmtime(&currtime);
+	sprintf_s(filename, "./datas/navidata%d-%d-%d-%d-%d-%d.txt", p->tm_year + 1990, p->tm_mon + 1,
+		p->tm_mday, p->tm_hour + 8, p->tm_min, p->tm_sec);
+
 }
 
 void InertialNavigation::JudgeYawOffset()

@@ -56,7 +56,7 @@ using namespace std;
 #define TIMER_MS 10
 
 #define SIXDOF_CONTROL_DELEY 1
-#define SCENE_THREAD_DELAY 50
+#define SCENE_THREAD_DELAY 20
 #define SENSOR_THREAD_DELAY 1000
 #define DATA_BUFFER_THREAD_DELAY 1
 
@@ -156,6 +156,7 @@ DataPackageDouble visionData = {0};
 DataPackageDouble lastData = {0};
 DataPackageDouble naviFinalData = {0};
 DataPackageDouble naviWaterFinalData = {0};
+DataPackageDouble naviInitData = {0};
 
 DWORD WINAPI DataTransThread(LPVOID pParam)
 {
@@ -189,7 +190,7 @@ DWORD WINAPI SceneInfoThread(LPVOID pParam)
 			naviWaterFinalData.Yaw = water.Yaw;
 			ctrlCommandLockobj.unlock();
 		}
-		water.SendData(data.Roll / 100.0, data.Yaw / 100.0, data.Pitch / 100.0);
+		water.SendData(naviInitData.Roll, naviInitData.Yaw, naviInitData.Pitch);
 		Sleep(SCENE_THREAD_DELAY);
 	}
 	return 0;
@@ -344,6 +345,9 @@ void VisionOrSensorDataDeal()
 		visionData.Roll = navigation.Roll;
 		visionData.Pitch = navigation.Pitch;
 		visionData.Yaw = navigation.Yaw;
+		naviInitData.Roll = navigation.NaviRoll;
+		naviInitData.Pitch = navigation.NaviPitch;
+		naviInitData.Yaw = navigation.NaviYaw;
 		csdata.unlock();
 	}
 #else

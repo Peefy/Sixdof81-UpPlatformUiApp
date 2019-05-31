@@ -206,6 +206,9 @@ public:
 	bool IsInertialError;
 	bool IsNavigationError;
 	bool IsRS422Start;
+	double NaviRoll;
+	double NaviPitch;
+	double NaviYaw;
 private:
 	void RenewData();
 	void DecodeData();
