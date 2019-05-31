@@ -1160,7 +1160,7 @@ void CECATSampleDlg::OnTimer(UINT nIDEvent)
 	if (csdata.try_lock())
 	{
 		statusStr.Format(_T("1:%.2f 2:%.2f 3:%.2f 4:%.2f 5:%.2f 6:%.2f"),
-			visionData.X, visionData.Y, visionData.Z,
+			naviWaterFinalData.Roll, naviWaterFinalData.Pitch, naviWaterFinalData.Yaw,
 			visionData.Roll, visionData.Pitch, visionData.Yaw);
 		csdata.unlock();
 	}
