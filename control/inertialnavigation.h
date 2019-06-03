@@ -113,6 +113,8 @@ using namespace std;
 
 #define YAW_OFFSET 305.686
 
+#define SHIP_YAW_OFFSET 48.405
+
 #pragma pack (1)
 typedef struct
 {
