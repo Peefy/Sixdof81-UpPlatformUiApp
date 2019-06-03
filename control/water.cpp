@@ -154,7 +154,8 @@ void Water::TestSendData()
 	serialPort.WriteData(chrTemp, length);
 }
 
-void Water::SendData(double roll, double yaw, double pitch)
+void Water::SendData(double roll, double yaw, double pitch, 
+					 uint8_t platformState, uint8_t platformWarning)
 {
 	static unsigned char chrTemp[BUFFER_MAX] = {0};
 	size_t sendSize = sizeof(char) * UpPackageLength;

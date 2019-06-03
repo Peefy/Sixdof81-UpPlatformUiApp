@@ -27,14 +27,14 @@
 enum class ApiControlCommandInt32
 {
 	API_CTL_POWER_ON             =  0,
-	API_CTL_POWER_OFF             =  1,
-	API_CTL_CMD_NONE             =  -1,    //串口API控制指令：空
-	API_CTL_CMD_RISE_INT32       =  2,  //串口API控制指令：上升
-	API_CTL_CMD_DOWN_INT32       =  3,  //串口API控制指令：下降
-	API_CTL_CMD_CONNECT_INT32    =  6,  //串口API控制指令：连接
-	API_CTL_CMD_DISCONNECT_INT32 =  7,  //串口API控制指令：断开
-	API_CTL_CMD_PAUSE_INT32      =  8,  //串口API控制指令：暂停
-	API_CTL_CMD_RECOVER_INT32    =  9   //串口API控制指令：暂停恢复
+	API_CTL_POWER_OFF             =  11,
+	API_CTL_CMD_NONE             =  -11,    //串口API控制指令：空
+	API_CTL_CMD_RISE_INT32       =  22,  //串口API控制指令：上升
+	API_CTL_CMD_DOWN_INT32       =  33,  //串口API控制指令：下降
+	API_CTL_CMD_CONNECT_INT32    =  66,  //串口API控制指令：连接
+	API_CTL_CMD_DISCONNECT_INT32 =  77,  //串口API控制指令：断开
+	API_CTL_CMD_PAUSE_INT32      =  88,  //串口API控制指令：暂停
+	API_CTL_CMD_RECOVER_INT32    =  99   //串口API控制指令：暂停恢复
 };
 
 #pragma pack (1)

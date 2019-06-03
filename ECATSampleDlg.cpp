@@ -102,7 +102,6 @@ Sensor sensor;
 
 SensorInfo_t info;
 
-//ApiControl apiControl;
 Water water;
 // 六自由度平台状态
 double pulse_cal[AXES_COUNT];
@@ -124,6 +123,7 @@ bool isAutoInit = true;
 bool isTest = true;
 bool isCosMode = false;
 bool stopSCurve = false;
+bool isUseMessageBox = true;
 
 double testVal[FREEDOM_NUM] = {0};
 double testHz[FREEDOM_NUM] = {0};
@@ -181,16 +181,25 @@ DWORD WINAPI SceneInfoThread(LPVOID pParam)
 {
 	while (true)
 	{	
-		water.GatherData();
-		if (ctrlCommandLockobj.try_lock())
+		if (water.GatherData() == true)
 		{
-			apiCtrlComand = water.ControlCommand;
-			naviWaterFinalData.Roll = water.Roll;
-			naviWaterFinalData.Pitch = water.Pitch;
-			naviWaterFinalData.Yaw = water.Yaw;
-			ctrlCommandLockobj.unlock();
+			isUseMessageBox = false;
+			if (ctrlCommandLockobj.try_lock())
+			{
+				apiCtrlComand = water.ControlCommand;
+				naviWaterFinalData.Roll = water.Roll;
+				naviWaterFinalData.Pitch = water.Pitch;
+				naviWaterFinalData.Yaw = water.Yaw;
+				ctrlCommandLockobj.unlock();
+			}			
 		}
-		water.SendData(naviInitData.Roll, naviInitData.Yaw, naviInitData.Pitch);
+		else
+		{
+			isUseMessageBox = true;
+			apiCtrlComand = WaterControlCommandInt8::WATER_CTL_CMD_NONE_INT8;
+		}
+		water.SendData(naviInitData.Roll, naviInitData.Yaw, naviInitData.Pitch,
+			status, 1);
 		Sleep(SCENE_THREAD_DELAY);
 	}
 	return 0;
@@ -1225,12 +1234,12 @@ void CECATSampleDlg::OnBnClickedBtnRise()
 	// 所有开关触碰到了才能上升
 	if (delta.IsAllAtBottom() == false)
 	{
-		//MessageBox(_T(SIXDOF_NOT_BOTTOM_AND_RISE_MESSAGE));
+		if (isUseMessageBox == true) MessageBox(_T(SIXDOF_NOT_BOTTOM_AND_RISE_MESSAGE));
 		return;
 	}	
 	if (status != SIXDOF_STATUS_BOTTOM)
 	{
-		//MessageBox(_T(SIXDOF_NOT_BOTTOM_MESSAGE));
+		if (isUseMessageBox == true) MessageBox(_T(SIXDOF_NOT_BOTTOM_MESSAGE));
 		return;
 	}
 	delta.ResetStatus();
@@ -1245,7 +1254,7 @@ void CECATSampleDlg::OnBnClickedBtnMiddle()
 	{
 		if (status != SIXDOF_STATUS_READY)
 		{
-			//MessageBox(_T(SIXDOF_NOT_MIDDLE_MESSAGE));
+			if (isUseMessageBox == true) MessageBox(_T(SIXDOF_NOT_MIDDLE_MESSAGE));
 			return;
 		}
 	}
@@ -1253,7 +1262,7 @@ void CECATSampleDlg::OnBnClickedBtnMiddle()
 	{
 		if (status != SIXDOF_STATUS_MIDDLE)
 		{
-			//MessageBox(_T(SIXDOF_NOT_MIDDLE_MESSAGE));
+			if (isUseMessageBox == true) MessageBox(_T(SIXDOF_NOT_MIDDLE_MESSAGE));
 			return;
 		}
 	}
@@ -1265,7 +1274,7 @@ void CECATSampleDlg::OnBnClickedBtnStart()
 {
 	if (status != SIXDOF_STATUS_READY)
 	{
-	    //MessageBox(_T(SIXDOF_NOT_BEGIN_MESSAGE));
+	    if (isUseMessageBox == true) MessageBox(_T(SIXDOF_NOT_BEGIN_MESSAGE));
 		return;
 	}
 	status = SIXDOF_STATUS_RUN;
@@ -1329,7 +1338,7 @@ void CECATSampleDlg::OnCommandStopme()
 
 void CECATSampleDlg::OnBnClickedBtnDown()
 {	
-	if (status == SIXDOF_STATUS_ISFALLING || status == SIXDOF_STATUS_BOTTOM)
+	if (status == SIXDOF_STATUS_RUN)
 	{
 		return;
 	}
@@ -1389,7 +1398,7 @@ void CECATSampleDlg::OnBnClickedButtonTest()
 {
 	if (status != SIXDOF_STATUS_READY)
 	{
-		//MessageBox(_T(SIXDOF_NOT_BEGIN_MESSAGE));
+		if (isUseMessageBox == true) MessageBox(_T(SIXDOF_NOT_BEGIN_MESSAGE));
 		return;
 	}
 	status = SIXDOF_STATUS_RUN;
