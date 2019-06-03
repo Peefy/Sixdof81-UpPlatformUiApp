@@ -318,6 +318,11 @@ void InertialNavigation::JudgeYawOffset()
 	YawOffset = data.Yaw * ANGLE_SCALE / 3600.0;
 }
 
+void InertialNavigation::SetYawOffset(double yawOffset)
+{
+	YawOffset = yawOffset;
+}
+
 void InertialNavigation::PidInit()
 {
 	MyPidParaInit(&rollPid);

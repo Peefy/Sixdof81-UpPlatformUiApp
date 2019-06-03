@@ -112,7 +112,6 @@ using namespace std;
 #define CHECK_BYTE_CAL_END_INDEX  79
 
 #define YAW_OFFSET 305.686
-
 #define SHIP_YAW_OFFSET 48.405
 
 #pragma pack (1)
@@ -180,6 +179,7 @@ public:
 	bool GatherData();
 	int GetBufferLength();
 	void JudgeYawOffset();
+	void SetYawOffset(double yawOffset = SHIP_YAW_OFFSET);
 	void SetDefaultAlignment(double lat, double lon, double height);
 	void SetGpsPoleLength(double x, double y, double z);
 	void SetAngleError(double pitch, double roll, double yaw);
