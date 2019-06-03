@@ -327,6 +327,14 @@ void CECATSampleDlg::JudgeControlCommand()
 			// Power Off
 			OnBnClickedBtnPowerOff();
 			break;
+		case WaterControlCommandInt8::WATER_CTL_CMD_CHECK_ON_INT8:
+			// Check On
+			OnBnClickedBtnCheckOn();
+			break;
+		case WaterControlCommandInt8::WATER_CTL_CMD_CHECK_OFF_INT8:
+			// Check Off
+			OnBnClickedBtnCheckOff();
+			break;
 		case WaterControlCommandInt8::WATER_CTL_CMD_NONE_INT8:
 			break;
 		default:

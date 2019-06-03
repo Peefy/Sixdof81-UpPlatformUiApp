@@ -27,14 +27,16 @@
 
 enum class WaterControlCommandInt8
 {
-	WATER_CTL_POWER_ON_INT8       =  0,
-	WATER_CTL_POWER_OFF_INT8      =  1,
+	WATER_CTL_POWER_ON_INT8       =  0,    //串口API控制指令：电源开
+	WATER_CTL_POWER_OFF_INT8      =  1,    //串口API控制指令：电源关
 	WATER_CTL_CMD_RISE_INT8       =  2,    //串口API控制指令：上升
 	WATER_CTL_CMD_DOWN_INT8       =  3,    //串口API控制指令：下降
 	WATER_CTL_CMD_CONNECT_INT8    =  6,    //串口API控制指令：连接
-	WATER_CTL_CMD_DISCONNECT_INT8 =  7,    //串口控制指令：断开
+	WATER_CTL_CMD_DISCONNECT_INT8 =  7,    //串口API控制指令：断开
 	WATER_CTL_CMD_PAUSE_INT8      =  8,    //串口API控制指令：暂停
 	WATER_CTL_CMD_RECOVER_INT8    =  9,    //串口API控制指令：暂停恢复
+	WATER_CTL_CMD_CHECK_ON_INT8   =  10,   //串口API控制指令：检修开
+	WATER_CTL_CMD_CHECK_OFF_INT8  =  11,   //串口API控制指令：检修关
 	WATER_CTL_CMD_NONE_INT8       =  100,  //串口API控制指令：空
 };
 
@@ -43,7 +45,7 @@ typedef struct
 {
 	uint8_t HeadOne;
 	uint8_t HeadTwo;
-	uint8_t Length;        //1ms
+	uint8_t Length;        
 	uint8_t FrameNumber;  
 	uint8_t Kind;
 	uint8_t State;

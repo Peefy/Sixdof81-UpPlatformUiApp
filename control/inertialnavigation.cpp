@@ -8,11 +8,14 @@
 #define JUDGE_IS_RECIEVE if(IsRecievedData == false) return;
 
 #define IS_USE_DELTA_PID 0
+#define IS_NAVI_FILE_RECORD 1
 
 #define FRAME_LENGTH 83
 #define DATA_NUM 21
 
+#if IS_NAVI_FILE_RECORD
 char filename[100] = "";
+#endif
 
 static double p = 0.001;
 static double i = 0.0001;
@@ -279,9 +282,9 @@ void InertialNavigation::DecodeData()
 	IsAlignment = STATUS_BIT_GET(data.StateByte, ALIGNMENT_BIT);
 	IsInertialError = STATUS_BIT_GET(data.StateByte, INERTIAL_ERR_BIT);
 	IsNavigationError = STATUS_BIT_GET(data.StateByte, NAVIGATION_ERR_BIT);
-
+#if IS_NAVI_FILE_RECORD
 	config::RecordData(filename, NaviRoll, NaviPitch, NaviYaw);
-
+#endif
 }
 
 void InertialNavigation::DataInit()
@@ -305,12 +308,12 @@ void InertialNavigation::DataInit()
 	IsInertialError = false;
 	IsNavigationError = false;
 	IsRS422Start = false;
-
+#if IS_NAVI_FILE_RECORD
 	time_t currtime = time(NULL);
 	struct tm* p = gmtime(&currtime);
 	sprintf_s(filename, "./datas/navidata%d-%d-%d-%d-%d-%d.txt", p->tm_year + 1990, p->tm_mon + 1,
 		p->tm_mday, p->tm_hour + 8, p->tm_min, p->tm_sec);
-
+#endif
 }
 
 void InertialNavigation::JudgeYawOffset()
