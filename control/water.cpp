@@ -23,6 +23,7 @@ void Water::DataInit()
 	UpPackageLength = sizeof(WaterUpDataPackage);
 	DownPackageLength = sizeof(WaterDownDataPackage);
 	frameNumber = 0;
+	ControlCommand = WaterControlCommandInt8::WATER_CTL_CMD_NONE_INT8;
 }
 
 bool Water::Open()
