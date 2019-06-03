@@ -65,7 +65,7 @@ bool InertialNavigation::Close()
 	return IsRS422Start;
 }
 
-bool InertialNavigation::JudgeCheckByte(char* chars)
+bool InertialNavigation::JudgeCheckByte(unsigned char* chars)
 {
 	unsigned char checkbyte = 0;
 	for (int i = CHECK_BYTE_CAL_START_INDEX;i <= CHECK_BYTE_CAL_END_INDEX;++i)
@@ -103,8 +103,8 @@ void InertialNavigation::RenewData()
 			continue;
 		}
 		if(chrTemp[1] == RS422_DATA_HEAD_TWO && chrTemp[RS422_DATA_PACKAGE_LEGNTH - 1] == RS422_DATA_TAIL_TWO &&
-			chrTemp[RS422_DATA_PACKAGE_LEGNTH - 2] == RS422_DATA_TAIL_ONE //&&
-			)//JudgeCheckByte(chrTemp) == true)
+			chrTemp[RS422_DATA_PACKAGE_LEGNTH - 2] == RS422_DATA_TAIL_ONE &&
+			JudgeCheckByte(chrTemp) == true)
 		{
 			memcpy(&data, &chrTemp[0], RS422_DATA_PACKAGE_LEGNTH);
 		}
@@ -150,7 +150,8 @@ bool InertialNavigation::GatherData()
 		if((pData[0] == RS422_DATA_HEAD_ONE) && 
 			(pData[1] == RS422_DATA_HEAD_TWO) && 
 			(pData[FRAME_LENGTH - 2] == RS422_DATA_TAIL_ONE) && 
-			(pData[FRAME_LENGTH - 1] == RS422_DATA_TAIL_TWO))
+			(pData[FRAME_LENGTH - 1] == RS422_DATA_TAIL_TWO) && 
+			JudgeCheckByte(pData) == true)
 		{       	
 			ulFrameNum++;
 			memcpy(&data, &pData[0], FRAME_LENGTH);

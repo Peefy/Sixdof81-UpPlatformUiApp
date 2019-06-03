@@ -39,10 +39,10 @@ using namespace std;
 #define DOWN_VEL 0.05
 
 //平台运动最大角度
-#define MAX_DEG 28
+#define MAX_DEG 15
 #define DEG_SCALE 0.01
 //平台运动最大位移
-#define MAX_XYZ 600
+#define MAX_XYZ 150
 #define XYZ_SCALE 0.1
 // 平台运动最大频率
 #define MAX_HZ 5
@@ -55,8 +55,8 @@ using namespace std;
 #define MAX_DEG_ROLL   15
 #define MAX_DEG_YAW    15
 
-#define MAX_XYZ_ZERO_POS    30
-#define MAX_DEG_ZERO_POS    3
+#define MAX_XYZ_ZERO_POS    (MAX_XYZ_X)
+#define MAX_DEG_ZERO_POS    (MAX_DEG_PITCH)
 
 #else
 //缸的最大行程

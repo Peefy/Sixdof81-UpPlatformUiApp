@@ -218,7 +218,7 @@ private:
 	CSerialPort serialPort;
 	//CCOM serialPort;
 protected:
-	bool JudgeCheckByte(char * chars);
+	bool JudgeCheckByte(unsigned char * chars);
 	void RS422SendString(string strs);
 };
 
