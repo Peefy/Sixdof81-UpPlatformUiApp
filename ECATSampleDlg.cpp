@@ -312,11 +312,12 @@ void CECATSampleDlg::JudgeControlCommand()
 			break;
 		case WaterControlCommandInt8::WATER_CTL_CMD_PAUSE_INT8:
 			closeDataThread = true;
+			status = SIXDOF_STATUS_READY;
 			delta.ServoStop();
 			break;
 		case WaterControlCommandInt8::WATER_CTL_CMD_RECOVER_INT8:
 			// Run
-			OnBnClickedBtnStart();
+			StartNotJudgeYawOffset();
 			break;
 		case WaterControlCommandInt8::WATER_CTL_POWER_ON_INT8:
 			// Power On
@@ -1268,6 +1269,24 @@ void CECATSampleDlg::OnBnClickedBtnMiddle()
 	}
 	status = SIXDOF_STATUS_READY;
 	delta.MoveToZeroPulseNumber();
+}
+
+void CECATSampleDlg::StartNotJudgeYawOffset()
+{
+	status = SIXDOF_STATUS_RUN;
+	delta.RenewNowPulse();
+	delta.GetMotionAveragePulse();
+	delta.UnlockServo();
+	delta.PidControllerInit();
+	navigation.PidInit();
+	naviFinalData.Roll = RANGE(GetCEditNumber(IDC_EDIT_ROLL_ZERO_POS), -MAX_DEG_ZERO_POS, MAX_DEG_ZERO_POS);
+	naviFinalData.Pitch = RANGE(GetCEditNumber(IDC_EDIT_PITCH_ZERO_POS), -MAX_DEG_ZERO_POS, MAX_DEG_ZERO_POS);
+	naviFinalData.Yaw = RANGE(GetCEditNumber(IDC_EDIT_YAW_ZERO_POS), -MAX_DEG_ZERO_POS, MAX_DEG_ZERO_POS);
+	// 正常使用模式
+	isTest = false;
+	isCosMode = false;
+	t = 0;
+	closeDataThread = false;
 }
 
 void CECATSampleDlg::OnBnClickedBtnStart()
