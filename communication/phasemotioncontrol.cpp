@@ -131,7 +131,7 @@ void PhaseMotionControl::SetMotionVelocty(double* velocity, int axexnum)
 bool PhaseMotionControl::ServoAllOnOff(bool isOn)
 {
 #if IS_BIG_MOTION
-	sixdofDioAndCount.BigMotionEnableAllMotor(isOn);
+	sixdofDioAndCount.EnableAllMotor(isOn);
 #else
 	sixdofDioAndCount.EnableAllMotor(isOn);
 #endif
@@ -189,7 +189,7 @@ void PhaseMotionControl::EnableServo()
 		bits[i] = MOTION_ENABLE_LEVEL;
 	}
 #if IS_BIG_MOTION
-	sixdofDioAndCount.BigMotionEnable(bits);
+	sixdofDioAndCount.SetMotionEnableBit(bits);
 #else
 	sixdofDioAndCount.SetMotionEnableBit(bits);
 #endif
@@ -204,7 +204,7 @@ void PhaseMotionControl::LockServo()
 		bits[i] = MOTION_LOCK_LEVEL;
 	}
 #if IS_BIG_MOTION
-	sixdofDioAndCount.BigMotionEnable(bits);
+	sixdofDioAndCount.SetMotionLockBit(bits);
 #else
 	sixdofDioAndCount.SetMotionEnableBit(bits);
 	sixdofDioAndCount.SetMotionLockBit(bits);
@@ -222,7 +222,7 @@ void PhaseMotionControl::UnlockServo()
 		bits[i] = !MOTION_LOCK_LEVEL;
 	}
 #if IS_BIG_MOTION
-	sixdofDioAndCount.BigMotionEnable(bits);
+	sixdofDioAndCount.SetMotionLockBit(bits);
 #else
 	sixdofDioAndCount.SetMotionEnableBit(bits);
 	sixdofDioAndCount.SetMotionLockBit(bits);
@@ -233,7 +233,7 @@ void PhaseMotionControl::EnableServo(int index)
 {
 	ASSERT_INDEX(index);
 #if IS_BIG_MOTION
-	sixdofDioAndCount.BigMotionEnable(index, MOTION_ENABLE_LEVEL);
+	sixdofDioAndCount.SetMotionLockBit(index, MOTION_ENABLE_LEVEL);
 #else
 	sixdofDioAndCount.SetMotionEnableBit(index, MOTION_ENABLE_LEVEL);
 	sixdofDioAndCount.SetMotionLockBit(index, MOTION_ENABLE_LEVEL);
@@ -245,7 +245,7 @@ void PhaseMotionControl::LockServo(int index)
 	ASSERT_INDEX(index);
 	enableMove = false;
 #if IS_BIG_MOTION
-	sixdofDioAndCount.BigMotionEnable(index, MOTION_LOCK_LEVEL);
+	sixdofDioAndCount.SetMotionLockBit(index, MOTION_LOCK_LEVEL);
 #else
 	sixdofDioAndCount.SetMotionEnableBit(index, MOTION_LOCK_LEVEL);
 	sixdofDioAndCount.SetMotionLockBit(index, MOTION_LOCK_LEVEL);
@@ -256,7 +256,7 @@ void PhaseMotionControl::UnlockServo(int index)
 {
 	ASSERT_INDEX(index);
 #if IS_BIG_MOTION
-	sixdofDioAndCount.BigMotionEnable(index, !MOTION_LOCK_LEVEL);
+	sixdofDioAndCount.SetMotionLockBit(index, !MOTION_LOCK_LEVEL);
 #else
 	sixdofDioAndCount.SetMotionEnableBit(index, !MOTION_LOCK_LEVEL);
 	sixdofDioAndCount.SetMotionLockBit(index, !MOTION_LOCK_LEVEL);
@@ -554,14 +554,13 @@ void PhaseMotionControl::ReadAllSwitchStatus()
 {
 
 #if IS_BIG_MOTION
-	bool kbits[SXIDOF_MOTION_NUM] = { true,true,true,true,true,true };
-	sixdofDioAndCount.BigMotionReadKBit(kbits);
+
 #endif
 	for (int i = 0;i < AXES_COUNT;++i)
 	{
 		
 #if IS_BIG_MOTION
-		IsAtBottoms[i] = !kbits[i];
+		sixdofDioAndCount.ReadKBit(i, &IsAtBottoms[i]);
 #else
 		sixdofDioAndCount.ReadKBit(i, &IsAtBottoms[i]);
 #endif
@@ -649,7 +648,7 @@ bool PhaseMotionControl::PowerOnSelfTest(SixDofPlatformStatus laststatus, double
 void PhaseMotionControl::Test()
 {
 #if IS_BIG_MOTION
-	sixdofDioAndCount.BigMotionTest();
+	sixdofDioAndCount.Test();
 #else
 	sixdofDioAndCount.Test();
 #endif
@@ -660,7 +659,7 @@ void PhaseMotionControl::PowerStart(bool isStart)
 #if IS_BIG_MOTION
 	sixdofDioAndCount.Start(isStart);
 #else
-	sixdofDioAndCount.Start(isStart);
+	//sixdofDioAndCount.Start(isStart);
 #endif
 
 }
@@ -670,6 +669,6 @@ void PhaseMotionControl::PowerCheckStart(bool isStart)
 #if IS_BIG_MOTION
 	sixdofDioAndCount.CheckStart(isStart);
 #else
-	sixdofDioAndCount.CheckStart(isStart);
+	//sixdofDioAndCount.CheckStart(isStart);
 #endif
 }

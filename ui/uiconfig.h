@@ -28,6 +28,10 @@
 #define IDC_STATIC_PITCH_VAL_SHOW_TEXT "俯仰角度"
 #define IDC_STATIC_YAW_VAL_SHOW_TEXT   "航向角度"
 
+#define IDC_STATIC_SET_ROLL_SHOW_TEXT    "设定侧倾"
+#define IDC_STATIC_SET_PITCH_SHOW_TEXT   "设定俯仰"
+#define IDC_STATIC_SET_YAW_SHOW_TEXT     "设定航向"
+
 #define IDC_STATIC_X_HZ_SHOW_TEXT      "纵向频率"
 #define IDC_STATIC_Y_HZ_SHOW_TEXT      "横向频率"
 #define IDC_STATIC_Z_HZ_SHOW_TEXT      "垂向频率"

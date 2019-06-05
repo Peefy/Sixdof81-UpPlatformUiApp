@@ -141,6 +141,8 @@ double chartYawValPoint[CHART_POINT_NUM] = { 0 };
 double runTime = 0;
 double chartTime = 0;
 
+double yawoffset = 0;
+
 WaterControlCommandInt8 apiCtrlComand = WaterControlCommandInt8::WATER_CTL_CMD_NONE_INT8;
 
 kalman1_state kalman_rollFilter;
@@ -177,6 +179,10 @@ DWORD WINAPI SensorInfoThread(LPVOID pParam)
 	return 0;
 }
 
+double rollSend = 0;
+double pitchSend = 0;
+double yawSend = 0;
+
 DWORD WINAPI SceneInfoThread(LPVOID pParam)
 {
 	while (true)
@@ -190,6 +196,7 @@ DWORD WINAPI SceneInfoThread(LPVOID pParam)
 				naviWaterFinalData.Roll = water.Roll;
 				naviWaterFinalData.Pitch = water.Pitch;
 				naviWaterFinalData.Yaw = water.Yaw;
+				yawoffset = water.YawOffset;
 				ctrlCommandLockobj.unlock();
 			}			
 		}
@@ -198,8 +205,15 @@ DWORD WINAPI SceneInfoThread(LPVOID pParam)
 			isUseMessageBox = true;
 			apiCtrlComand = WaterControlCommandInt8::WATER_CTL_CMD_NONE_INT8;
 		}
-		water.SendData(naviInitData.Roll, naviInitData.Yaw, naviInitData.Pitch,
-			status, 1);
+		
+	
+		if (csdata.try_lock())
+		{
+			rollSend = naviInitData.Roll;pitchSend = naviInitData.Pitch;yawSend = naviInitData.Yaw;
+			csdata.unlock();
+		}
+
+		water.SendData(rollSend, yawSend, pitchSend, status, 1);
 		Sleep(SCENE_THREAD_DELAY);
 	}
 	return 0;
@@ -349,7 +363,6 @@ void VisionOrSensorDataDeal()
 {
 #if IS_USE_NAVIGATION
 	navigation.GatherData();
-	info = sensor.GatherData();
 	if (csdata.try_lock())
 	{
 #if	IS_USE_KALMAN_FILTER
@@ -357,9 +370,6 @@ void VisionOrSensorDataDeal()
 		navigation.Pitch = kalman1_filter(&kalman_pitchFilter, navigation.Pitch);
 		navigation.Yaw = kalman1_filter(&kalman_yawFilter, navigation.Yaw);
 #endif
-		visionData.X = info.Roll;
-		visionData.Y = info.Pitch;
-		visionData.Z = info.Yaw;
 		visionData.Roll = navigation.Roll;
 		visionData.Pitch = navigation.Pitch;
 		visionData.Yaw = navigation.Yaw;
@@ -372,7 +382,7 @@ void VisionOrSensorDataDeal()
 
 #endif
 }
-
+double roll, pitch, yaw;
 void SixdofControl()
 {
 	static double deltat = 0.031;
@@ -501,9 +511,14 @@ void SixdofControl()
 			auto x = RANGE(deltax, -MAX_XYZ, MAX_XYZ);
 			auto y = RANGE(deltay, -MAX_XYZ, MAX_XYZ);
 			auto z = RANGE(deltaz, -MAX_XYZ, MAX_XYZ);
-			auto roll = RANGE(naviFinalData.Roll + naviWaterFinalData.Roll + deltaroll + nowpose[3], -MAX_DEG, MAX_DEG);
-			auto pitch = RANGE(naviFinalData.Pitch + naviWaterFinalData.Pitch + deltapitch + nowpose[4], -MAX_DEG, MAX_DEG);
-			auto yaw = RANGE(naviFinalData.Yaw + naviWaterFinalData.Yaw + deltayaw + nowpose[5], -MAX_DEG, MAX_DEG);
+			if (ctrlCommandLockobj.try_lock())
+			{	
+				//navigation.SetYawOffset(yawoffset);
+				roll = RANGE(naviFinalData.Roll + naviWaterFinalData.Roll + deltaroll + nowpose[3], -MAX_DEG, MAX_DEG);
+				pitch = RANGE(naviFinalData.Pitch + naviWaterFinalData.Pitch + deltapitch + nowpose[4], -MAX_DEG, MAX_DEG);
+				yaw = RANGE(naviFinalData.Yaw + naviWaterFinalData.Yaw + deltayaw + nowpose[5], -MAX_DEG, MAX_DEG);
+				ctrlCommandLockobj.unlock();
+			}
 			double* pulse_dugu = Control(x, y, z, roll, yaw, pitch);
 			for (auto ii = 0; ii < AXES_COUNT; ++ii)
 			{
@@ -544,13 +559,21 @@ void MoveValPoint()
 	}
 
 	chartBottomAxisPoint[CHART_POINT_NUM - 1] = chartTime;
-	chartXValPoint[CHART_POINT_NUM - 1] = data.X * XYZ_SCALE;
-	chartYValPoint[CHART_POINT_NUM - 1] = data.Y * XYZ_SCALE; 
-	chartZValPoint[CHART_POINT_NUM - 1] = data.Z * XYZ_SCALE;
-	chartRollValPoint[CHART_POINT_NUM - 1] = data.Roll * DEG_SCALE;
-	chartPitchValPoint[CHART_POINT_NUM - 1] = data.Pitch * DEG_SCALE;
-	chartYawValPoint[CHART_POINT_NUM - 1] = data.Yaw * DEG_SCALE;
+	if (csdata.try_lock())
+	{
+		chartRollValPoint[CHART_POINT_NUM - 1] = visionData.Roll;
+		chartPitchValPoint[CHART_POINT_NUM - 1] = visionData.Pitch;
+		chartYawValPoint[CHART_POINT_NUM - 1] = -visionData.Yaw;
+		csdata.unlock();
+	}
 
+	if(ctrlCommandLockobj.try_lock())
+	{
+		chartXValPoint[CHART_POINT_NUM - 1] = naviWaterFinalData.Roll;
+		chartYValPoint[CHART_POINT_NUM - 1] = naviWaterFinalData.Pitch; 
+		chartZValPoint[CHART_POINT_NUM - 1] = naviWaterFinalData.Yaw;
+		ctrlCommandLockobj.unlock();
+	}
 	m_ChartCtrl1.EnableRefresh(false);
 
 	pLineSerie1->ClearSerie();
@@ -657,18 +680,18 @@ void CECATSampleDlg::ChartInit()
 	pLineSerie1 = m_ChartCtrl1.CreateLineSerie();
 	pLineSerie1->SetSeriesOrdering(poNoOrdering);
 	pLineSerie1->SetWidth(2);
-	pLineSerie1->SetName(_T(IDC_STATIC_X_VAL_SHOW_TEXT));
+	pLineSerie1->SetName(_T(IDC_STATIC_SET_ROLL_SHOW_TEXT));
 	
 	pLineSerie2 = m_ChartCtrl1.CreateLineSerie();
 	pLineSerie2->SetSeriesOrdering(poNoOrdering);
 	
 	pLineSerie2->SetWidth(2);
-	pLineSerie2->SetName(_T(IDC_STATIC_Y_VAL_SHOW_TEXT)); 
+	pLineSerie2->SetName(_T(IDC_STATIC_SET_PITCH_SHOW_TEXT)); 
 
 	pLineSerie3 = m_ChartCtrl1.CreateLineSerie();
 	pLineSerie3->SetSeriesOrdering(poNoOrdering);
 	pLineSerie3->SetWidth(2);
-	pLineSerie3->SetName(_T(IDC_STATIC_Z_VAL_SHOW_TEXT));
+	pLineSerie3->SetName(_T(IDC_STATIC_SET_YAW_SHOW_TEXT));
 
 	pLineSerie4 = m_ChartCtrl1.CreateLineSerie();
 	pLineSerie4->SetSeriesOrdering(poNoOrdering);
@@ -1168,8 +1191,8 @@ void CECATSampleDlg::OnTimer(UINT nIDEvent)
 	
 	if (csdata.try_lock())
 	{
-		statusStr.Format(_T("1:%.2f 2:%.2f 3:%.2f 4:%.2f 5:%.2f 6:%.2f"),
-			naviWaterFinalData.Roll, naviWaterFinalData.Pitch, naviWaterFinalData.Yaw,
+		statusStr.Format(_T("1:%d 2:%d 3:%d 4:%.2f 5:%.2f 6:%.2f"),
+			data.Roll, data.Pitch, data.Yaw,
 			visionData.Roll, visionData.Pitch, visionData.Yaw);
 		csdata.unlock();
 	}
