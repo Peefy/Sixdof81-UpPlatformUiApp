@@ -41,6 +41,7 @@ void Water::DataInit()
 	DownPackageLength = sizeof(WaterDownDataPackage);
 	frameNumber = 0;
 	ControlCommand = WaterControlCommandInt8::WATER_CTL_CMD_NONE_INT8;
+	PlatformWarning = PlatformWarningType::NORMAL;
 #if IS_WATER_FILE_RECORD
 	time_t currtime = time(NULL);
 	struct tm* p = gmtime(&currtime);

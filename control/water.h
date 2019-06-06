@@ -40,6 +40,16 @@ enum class WaterControlCommandInt8
 	WATER_CTL_CMD_NONE_INT8       =  100,  //´®¿ÚAPI¿ØÖÆÖ¸Áî£º¿Õ
 };
 
+enum class PlatformWarningType
+{
+	NORMAL = 1,
+	MECHANICAL_ERR = 2,
+	DATA_ERR = 3,
+	RUN_ERR = 4,
+	LOGICAL_ERR = 5,
+	DATA_OUT_OF_RANGE = 6
+};
+
 #pragma pack (1)
 typedef struct
 {
@@ -91,6 +101,7 @@ public:
 	double Pitch;
 	double YawOffset;
 	WaterControlCommandInt8 ControlCommand;
+	PlatformWarningType PlatformWarning;
 	bool Open();
 	bool Close();
 	bool GatherData();

@@ -34,6 +34,8 @@
 //ÏÞÎ»º¯Êý
 #define RANGE(x,min,max)   (((x)<(min) ? (min) : ( (x)>(max) ? (max):(x) )))
 
+#define IS_OUT_OF_RANGE(x, min, max)   ((x) <= (min) || (x) >= (max)) 
+
 #define DOWN_RANGE(x, min) ( (x)<(min) ? (min) : (x) )
 
 #define BIT_CLEAN(var,n)        (var) &= ~(1<<(n))   

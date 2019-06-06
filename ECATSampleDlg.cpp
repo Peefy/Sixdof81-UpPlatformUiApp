@@ -142,6 +142,10 @@ double runTime = 0;
 double chartTime = 0;
 
 double yawoffset = 0;
+double rollSend, pitchSend, yawSend;
+double roll, pitch, yaw;
+bool outOfRange = false;
+int warning = 1;
 
 WaterControlCommandInt8 apiCtrlComand = WaterControlCommandInt8::WATER_CTL_CMD_NONE_INT8;
 
@@ -179,10 +183,6 @@ DWORD WINAPI SensorInfoThread(LPVOID pParam)
 	return 0;
 }
 
-double rollSend = 0;
-double pitchSend = 0;
-double yawSend = 0;
-
 DWORD WINAPI SceneInfoThread(LPVOID pParam)
 {
 	while (true)
@@ -197,6 +197,9 @@ DWORD WINAPI SceneInfoThread(LPVOID pParam)
 				naviWaterFinalData.Pitch = water.Pitch;
 				naviWaterFinalData.Yaw = water.Yaw;
 				yawoffset = water.YawOffset;
+				warning = outOfRange == true ? 
+					static_cast<int>(PlatformWarningType::DATA_OUT_OF_RANGE) : 
+					static_cast<int>(PlatformWarningType::NORMAL);
 				ctrlCommandLockobj.unlock();
 			}			
 		}
@@ -212,8 +215,7 @@ DWORD WINAPI SceneInfoThread(LPVOID pParam)
 			rollSend = naviInitData.Roll;pitchSend = naviInitData.Pitch;yawSend = naviInitData.Yaw;
 			csdata.unlock();
 		}
-
-		water.SendData(rollSend, yawSend, pitchSend, status, 1);
+		water.SendData(rollSend, yawSend, pitchSend, status, warning);
 		Sleep(SCENE_THREAD_DELAY);
 	}
 	return 0;
@@ -382,7 +384,7 @@ void VisionOrSensorDataDeal()
 
 #endif
 }
-double roll, pitch, yaw;
+
 void SixdofControl()
 {
 	static double deltat = 0.031;
@@ -514,9 +516,15 @@ void SixdofControl()
 			if (ctrlCommandLockobj.try_lock())
 			{	
 				//navigation.SetYawOffset(yawoffset);
-				roll = RANGE(naviFinalData.Roll + naviWaterFinalData.Roll + deltaroll + nowpose[3], -MAX_DEG, MAX_DEG);
-				pitch = RANGE(naviFinalData.Pitch + naviWaterFinalData.Pitch + deltapitch + nowpose[4], -MAX_DEG, MAX_DEG);
-				yaw = RANGE(naviFinalData.Yaw + naviWaterFinalData.Yaw + deltayaw + nowpose[5], -MAX_DEG, MAX_DEG);
+				auto setRoll = naviFinalData.Roll + naviWaterFinalData.Roll + deltaroll + nowpose[3];
+				auto setPitch = naviFinalData.Pitch + naviWaterFinalData.Pitch + deltapitch + nowpose[4];
+				auto setYaw = naviFinalData.Yaw + naviWaterFinalData.Yaw + deltayaw + nowpose[5];
+				outOfRange = IS_OUT_OF_RANGE(setRoll, -MAX_DEG, MAX_DEG) ||
+					IS_OUT_OF_RANGE(setPitch, -MAX_DEG, MAX_DEG) ||
+					IS_OUT_OF_RANGE(setYaw, -MAX_DEG, MAX_DEG);	
+				roll = RANGE(setRoll, -MAX_DEG, MAX_DEG);
+				pitch = RANGE(setPitch, -MAX_DEG, MAX_DEG);
+				yaw = RANGE(setYaw, -MAX_DEG, MAX_DEG);
 				ctrlCommandLockobj.unlock();
 			}
 			double* pulse_dugu = Control(x, y, z, roll, yaw, pitch);
