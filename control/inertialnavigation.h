@@ -212,7 +212,6 @@ public:
 	double NaviPitch;
 	double NaviYaw;
 private:
-	void RenewData();
 	void DecodeData();
 	RS422DataPackage data;
 	bool disposed;

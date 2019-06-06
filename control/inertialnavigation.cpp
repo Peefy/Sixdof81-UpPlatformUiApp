@@ -78,46 +78,6 @@ bool InertialNavigation::JudgeCheckByte(unsigned char* chars)
 	return checkbyte == chars[CHECK_BYTE_INDEX];
 }
 
-void InertialNavigation::RenewData()
-{
-	static unsigned char chrTemp[RS422_BUFFER_LENGTH] = {0}; 
-	static unsigned char ucRxCnt = 0;	
-	static unsigned short usRxLength = 0;
-	if (IsRS422Start == false)
-	{
-		return;
-	}
-	auto nowlength = serialPort.GetBytesInCOM();
-	unsigned char cRecved = 0;
-	for (int i = 0; i < nowlength; ++i)
-	{
-		serialPort.ReadChar(cRecved);
-		chrTemp[i] = cRecved;
-	}
-	//auto nowlength = CollectUARTData(RS422_PORT_NUMBER, chrTemp);
-	//auto nowlength = serialPort.GetCOMData(chrTemp);
-	usRxLength += nowlength;
-	while (usRxLength >= RS422_DATA_PACKAGE_LEGNTH)
-	{
-		if (chrTemp[0] != RS422_DATA_HEAD_ONE)
-		{
-			usRxLength--;
-			memcpy(&chrTemp[0], &chrTemp[1], usRxLength);                        
-			continue;
-		}
-		if(chrTemp[1] == RS422_DATA_HEAD_TWO && chrTemp[RS422_DATA_PACKAGE_LEGNTH - 1] == RS422_DATA_TAIL_TWO &&
-			chrTemp[RS422_DATA_PACKAGE_LEGNTH - 2] == RS422_DATA_TAIL_ONE &&
-			JudgeCheckByte(chrTemp) == true)
-		{
-			memcpy(&data, &chrTemp[0], RS422_DATA_PACKAGE_LEGNTH);
-		}
-		usRxLength -= RS422_DATA_PACKAGE_LEGNTH;
-		memcpy(&chrTemp[0], &chrTemp[RS422_DATA_PACKAGE_LEGNTH], usRxLength);    
-		DecodeData();
-		IsRecievedData = true;
-	}
-}
-
 bool InertialNavigation::GatherData()
 {
 	if (IsRS422Start == false)
@@ -132,7 +92,6 @@ bool InertialNavigation::GatherData()
 	static UCHAR *pch = chData;
 	int i;
 	UCHAR chReadData[READBUFFER] = {0};
-	//unsigned int uiReceived = (int)serialPort.GetCOMData(chReadData);
 	unsigned int uiReceived = serialPort.GetBytesInCOM();
 	unsigned char cRecved = 0;
 	for (int i = 0; i < uiReceived; ++i)
@@ -260,8 +219,6 @@ void InertialNavigation::RS422SendString(string strs)
 	const char* cstr = strs.c_str();
 	memcpy(ucstr, cstr, sizeof(unsigned char) * length);
 	serialPort.WriteData(ucstr, length);
-	//SendUARTMessageLength(RS422_PORT_NUMBER, strs.c_str(), strs.length());
-	//serialPort.SendCOMCode(ucstr, length);
 }
 
 void InertialNavigation::DecodeData()
@@ -342,7 +299,7 @@ void InertialNavigation::PidOut(double* roll, double *yaw, double* pitch)
 #if IS_USE_DELTA_PID
 	*pitch = MyDeltaPID_Real(&pitchPid, Pitch, finalPitch);
 	*roll = MyDeltaPID_Real(&rollPid, Roll, finalRoll);
-	//*yaw = MyDeltaPID_Real(&yawPid, Yaw, finalYaw);
+	*yaw = MyDeltaPID_Real(&yawPid, Yaw, finalYaw);
 #else
 	*roll = finalRoll - Roll;
 	*pitch = finalPitch - Pitch;
