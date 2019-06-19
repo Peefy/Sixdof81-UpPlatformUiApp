@@ -186,6 +186,9 @@ private:
 	SixdofDioAndCount sixdofDioAndCount;
 	deque<double*> pulses;
 protected:
+	double naviP;
+	double naviI;
+	double naviD;
 	mutex lockobj;
 };
 

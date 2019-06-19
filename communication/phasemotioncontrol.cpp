@@ -12,6 +12,8 @@
 #define RANGE_V(x, min, max)    (((x)<(min) ? (min) : ( (x)>(max) ? (max):(x) )))
 #define ASSERT_INDEX(index) 	if (index < 0 && index >= AXES_COUNT) return;
 
+#define IS_NAVI_PID_READ_FILE 1
+
 #if IS_BIG_MOTION
 #define MOTION_P 0.0001
 #define MOTION_I 0.0000001
@@ -23,9 +25,9 @@
 #define RISE_MOTION_D 0.0 
 #define RISE_MAX_VEL  0.3 
 
-#define NAVI_MOTION_P 0.00055
-#define NAVI_MOTION_I 0.000095
-#define NAVI_MOTION_D 0.000045
+#define NAVI_MOTION_P 0.0008
+#define NAVI_MOTION_I 0.00012
+#define NAVI_MOTION_D 0.00004
 #define NAVI_MAX_VEL  4.0
 #else
 #define MOTION_P 0.00055
@@ -89,6 +91,20 @@ PhaseMotionControl::PhaseMotionControl()
 		pos[i] = 0;
 	}
 	AvrPulse = 0;
+	naviP = NAVI_MOTION_P;
+	naviI = NAVI_MOTION_I;
+	naviD = NAVI_MOTION_D;
+#if IS_NAVI_PID_READ_FILE
+	naviP = config::ParseDoubleJsonFromFile(JSON_PARA_FILE_NAME, JSON_NAVI_P_KEY);
+	naviI = config::ParseDoubleJsonFromFile(JSON_PARA_FILE_NAME, JSON_NAVI_I_KEY);
+	naviD = config::ParseDoubleJsonFromFile(JSON_PARA_FILE_NAME, JSON_NAVI_D_KEY);
+	for (int i = 0;i < AXES_COUNT;++i)
+	{
+		MotionNavigationPidControler->Real_P = naviP;
+		MotionNavigationPidControler->Real_I = naviI;
+		MotionNavigationPidControler->Real_D = naviD;
+	}
+#endif
 	InitCard();
 }
 

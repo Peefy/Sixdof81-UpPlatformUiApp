@@ -1,9 +1,9 @@
 ﻿{
     "naviSerialPortNumber" : 7,       // 惯导串口端口号
     "computerSerialPortNumber" : 8,   // 上位机串口端口号
-    "naviP" : 0.02,
-    "naviI" : 0.00001,
-    "naviD" : 0.0,
+    "naviP" : 0.0008,
+    "naviI" : 0.00012,
+    "naviD" : 0.00004,
     "rollScale" : 1.0,
     "yawScale" : 2.0,
     "pitchScale" : -1.0,
