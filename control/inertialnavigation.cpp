@@ -46,7 +46,9 @@ string InertialNavigation::GetIntroduction() const
 
 bool InertialNavigation::Open()
 {
-	IsRS422Start = serialPort.InitPort(RS422_PORT_NUMBER, RS422_PORT_BAUDRATE) == true;
+	int portOpen = config::ParseIntJsonFromFile(JSON_PARA_FILE_NAME, JSON_naviSerialPortNumber_KEY);
+	IsRS422Start = serialPort.InitPort(portOpen != 0 ? portOpen : RS422_PORT_NUMBER, RS422_PORT_BAUDRATE) == true;
+	//IsRS422Start = serialPort.InitPort(RS422_PORT_NUMBER, RS422_PORT_BAUDRATE) == true;
 	//IsRS422Start = OpenCOMDevice(RS422_PORT_NUMBER, RS422_PORT_BAUDRATE) == 0;
 	//IsRS422Start = serialPort.InitCOM(RS422_PORT_NUMBER, RS422_PORT_BAUDRATE, 1, 0, 8);
 	return IsRS422Start;
@@ -54,7 +56,8 @@ bool InertialNavigation::Open()
 
 bool InertialNavigation::Open(int port)
 {
-	IsRS422Start = serialPort.InitPort(port, RS422_PORT_BAUDRATE) == true;
+	int portOpen = config::ParseIntJsonFromFile(JSON_PARA_FILE_NAME, JSON_naviSerialPortNumber_KEY);
+	IsRS422Start = serialPort.InitPort(portOpen != 0 ? portOpen : RS422_PORT_NUMBER, RS422_PORT_BAUDRATE) == true;
 	//IsRS422Start = OpenCOMDevice(port, RS422_PORT_BAUDRATE) == 0;
 	//IsRS422Start = serialPort.InitCOM(port, RS422_PORT_BAUDRATE, 1, 0, 8);
 	return IsRS422Start;

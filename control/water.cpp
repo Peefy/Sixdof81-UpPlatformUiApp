@@ -52,7 +52,9 @@ void Water::DataInit()
 
 bool Water::Open()
 {
-	auto re = serialPort.InitPort(WATER_SERIAL_NUM, WATER_SERIAL_BAUD) == true;
+	int portOpen = config::ParseIntJsonFromFile(JSON_PARA_FILE_NAME, JSON_computerSerialPortNumber_KEY);
+	auto re = serialPort.InitPort(portOpen != 0 ? portOpen : WATER_SERIAL_NUM, WATER_SERIAL_BAUD) == true;
+	//auto re = serialPort.InitPort(WATER_SERIAL_NUM, WATER_SERIAL_BAUD) == true;
 	//auto re = OpenCOMDevice(WATER_SERIAL_NUM, WATER_SERIAL_BAUD) == 0;
 	return re;
 }

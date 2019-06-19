@@ -42,6 +42,9 @@ using namespace std;
 #define JSON_NAVI_I_KEY               "naviI"
 #define JSON_NAVI_D_KEY               "naviD"
 
+#define JSON_naviSerialPortNumber_KEY       "naviSerialPortNumber"
+#define JSON_computerSerialPortNumber_KEY   "computerSerialPortNumber"
+
 namespace config {
     void GenerateDefaultConfigFile();
     void ReadAll(bool& result, int& baud, int& portnum);
