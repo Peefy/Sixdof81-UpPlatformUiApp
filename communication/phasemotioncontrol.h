@@ -22,7 +22,7 @@ using namespace std;
 #define MM_RPM 25.0
 // 电机转一圈编码器读数 2500
 #define PULSE_COUNT_RPM 2500
-
+// 平台的机械参数
 #define PlaneAboveHingeLength       229.907
 #define PlaneAboveBottomLength      2050.0
 #define CircleTopRadius             855.85
