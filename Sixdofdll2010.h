@@ -21,8 +21,8 @@ roll : 横滚角 deg
 yaw : 偏航角 deg
 pitch : 俯仰角 deg
 @return
-double[0] 杆1的伸长量
-double[1] 杆2的伸长量
+double[0] 杆1的伸长量 mm
+double[1] 杆2的伸长量 mm
 double[2] 杆3的伸长量
 double[3] 杆4的伸长量
 double[4] 杆5的伸长量
@@ -99,8 +99,6 @@ circleTopRadius : 上平台圆圈半径
 circleBottomRadius : 下平台圆圈半径
 distanceBetweenHingeTop ： 上平台同一组两个铰链的中心距离
 distanceBetweenHingeBottom : 下平台同一组两个铰链的中心距离
-@return
-bool 是否设置成功
 */
 SIXDOFDLL2010_API void SetPlatformPara(double planeAboveHingeLength, double planeAboveBottomLength, double circleTopRadius, 
 									   double circleBottomRadius, double distanceBetweenHingeTop, double distanceBetweenHingeBottom);

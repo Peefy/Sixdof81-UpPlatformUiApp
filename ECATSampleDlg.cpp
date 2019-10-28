@@ -1562,6 +1562,7 @@ void CECATSampleDlg::OnBnClickedButtonStopTest()
 	OnBnClickedBtnStopme();
 }
 
+
 void CECATSampleDlg::OnBnClickedBtnPowerOn()
 {
 	delta.PowerStart(true);
